@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIMEO — Sistema Integrado de Matrizes Estratégicas e/ou Operacionais</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#e6e6e6;font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;color:#111}
+a{color:inherit}
+/* ===== Palco no estilo "tela do Excel" (escala proporcional) ===== */
+.viewport{width:100vw;min-height:100vh;display:flex;justify-content:center;align-items:center;overflow:auto;padding-bottom:46px}
+.scaler{position:relative;flex:none;box-shadow:0 2px 14px rgba(0,0,0,.18)}
+.stage{position:absolute;top:0;left:0;transform-origin:0 0;background:#fff;overflow:hidden}
+.abs{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.15}
+.vt{writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap}
+.it{font-style:italic}
+.b{font-weight:700}
+a.btn{text-decoration:none;cursor:pointer;transition:filter .15s,box-shadow .15s}
+a.btn:hover,a.btn:focus-visible{filter:brightness(1.2);box-shadow:inset 0 0 0 4px #FFC000;outline:none}
+a.btn.light:hover,a.btn.light:focus-visible{filter:brightness(.93)}
+svg.layer{position:absolute;left:0;top:0;pointer-events:none}
+
+/* ===== Tela inicial ===== */
+.pink{background:#F2DCDB;color:#0000FF}
+.maroon{background:#632523;color:#fff;border:2px solid #1a0a0a}
+.black{background:#000;color:#fff}
+.tan{background:#DDD9C4}
+.olive{background:#4A452A;color:#fff}
+
+/* ===== Matriz de Risco ===== */
+.mr-cell{position:absolute;border:1px solid #000}
+.mr-head{position:absolute;left:0;right:0;top:0;height:32px;border-bottom:1px solid #000;display:flex;align-items:center;justify-content:center;font-size:18px}
+.mr-items{position:absolute;left:0;right:0;top:32px;bottom:0;display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:2px 6px}
+.oc{font-style:italic;font-weight:600;font-size:13.5px;color:#111;text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:1px 6px;border-radius:2px;text-align:center;line-height:1.15}
+.oc.red{color:#E00000}
+.oc:hover,.oc:focus-visible{background:rgba(0,0,0,.12);text-decoration:underline;outline:none}
+.hazid{background:#FF0000;color:#fff;font-style:normal;font-weight:700;font-size:11px;padding:1px 7px;letter-spacing:.3px;border:1px solid #fff}
+
+/* ===== Abas superiores / colunas CCO ===== */
+.tab{font-style:italic;font-size:20px;font-weight:600;color:#111;text-decoration:none;padding:2px 22px;height:100%;display:flex;align-items:center}
+.tab.blue{color:#0000FF}
+.tab:hover,.tab:focus-visible{background:#e2bcbb;outline:none}
+.cc{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid #333;font-weight:700;font-size:17.5px;line-height:1.35;padding:0 6px;color:#111;text-decoration:none}
+a.cc{font-style:italic;cursor:pointer}
+a.cc:hover,a.cc:focus-visible{filter:brightness(.88);box-shadow:inset 0 0 0 3px #632523;outline:none}
+.emd{position:absolute;display:flex;flex-direction:column;align-items:center;color:#fff;font:600 10px Arial,sans-serif;text-align:center;line-height:1.25}
+.emd .ic{width:50px;height:50px;display:flex;align-items:center;justify-content:center}
+.emd b{font-size:9.5px;margin:4px 0 10px}
+.emd span{opacity:.85;font-size:9.5px;margin-bottom:6px}
+.slot{position:absolute;border:2px dashed #9aa;background:repeating-linear-gradient(45deg,#f6f7f8,#f6f7f8 12px,#eef0f2 12px,#eef0f2 24px);display:flex;align-items:center;justify-content:center;text-align:center;color:#667;font:600 20px "Segoe UI",Arial,sans-serif;padding:20px}
+
+/* ===== Matrizes GUT ===== */
+.gc{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border:1px solid #6b6b6b;font-size:15.5px;line-height:1.22;padding:2px 5px;cursor:pointer;user-select:none}
+.gc:hover{filter:brightness(1.1);box-shadow:inset 0 0 0 2px #333}
+.gc.sel{box-shadow:inset 0 0 0 4px #000;font-weight:700}
+.gc.w0.sel{box-shadow:inset 0 0 0 4px #777}
+.gl{position:absolute;display:flex;align-items:center;justify-content:center;border-top:2px solid #000;border-bottom:2px solid #000}
+.gl span{transform:rotate(-45deg);font-weight:700;font-size:23px;letter-spacing:.5px}
+.pl{position:absolute;background:#F2DCDB;color:#0000FF;font-style:italic;font-weight:600;font-size:19px;display:flex;align-items:center;justify-content:center;text-decoration:none;cursor:pointer;border:none}
+.pl:hover{background:#e2bcbb}
+/* ===== POP ===== */
+.inc{position:absolute;display:flex;align-items:center;padding-left:4px;font-weight:600;font-size:15px;border:1px solid #000;border-top:none;white-space:nowrap;overflow:hidden;text-decoration:none;color:#111}
+a.inc{color:#0000FF;font-style:italic;text-decoration:underline}
+a.inc:hover{background:#F2DCDB}
+
+/* ===== Barra de navegação flutuante ===== */
+.nav{position:fixed;right:12px;bottom:8px;display:flex;gap:6px;z-index:50}
+.nav a{background:rgba(31,73,125,.92);color:#fff;text-decoration:none;font:600 13px "Segoe UI",Arial,sans-serif;padding:7px 12px;border-radius:18px;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+.nav a:hover{background:#632523}
+.rotate{position:fixed;left:0;right:0;top:0;background:#632523;color:#fff;font:600 12px "Segoe UI",Arial,sans-serif;text-align:center;padding:6px;z-index:60;display:none}
+@media (orientation:portrait) and (max-width:700px){.rotate.on{display:block}}
+
+/* ===== Telas internas (em construção) ===== */
+.page{min-height:100vh;background:#fff;font-family:"Segoe UI",Calibri,Arial,sans-serif}
+.p-top{display:flex;flex-wrap:wrap;border-bottom:4px solid #632523}
+.p-side{display:flex;flex-direction:column;min-width:190px}
+.p-side a{background:#F2DCDB;color:#0000FF;font-style:italic;font-weight:700;text-decoration:none;padding:9px 16px;border-bottom:1px solid #c9a9a8;font-family:Calibri,Carlito,Arial,sans-serif;font-size:17px}
+.p-side a:hover{background:#e6c4c3}
+.p-title{flex:1;background:#1F3B5F;color:#fff;display:flex;flex-direction:column;justify-content:center;padding:14px 26px;min-width:260px}
+.p-title h1{font-size:clamp(20px,3vw,34px);font-weight:700;letter-spacing:.3px}
+.p-title small{opacity:.8;font-size:14px;margin-top:4px}
+.p-body{max-width:1000px;margin:28px auto;padding:0 18px 80px}
+.card{border:1px solid #d6d6d6;border-left:6px solid #632523;border-radius:4px;padding:20px 22px;margin-bottom:18px;background:#fafafa}
+.card h2{font-size:18px;color:#632523;margin-bottom:8px}
+.card p{line-height:1.5;color:#333}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 18px;margin-top:6px}
+.kv dt{font-weight:700;color:#555}
+.chip{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700}
+.chip.T{background:#00B050;color:#fff}.chip.M{background:#FFFF00;color:#111;border:1px solid #c9c900}.chip.N{background:#FF0000;color:#fff}
+.chip.ok{background:#00B050;color:#fff}.chip.todo{background:#ddd;color:#555}
+.map-group{margin-bottom:22px}
+.map-group h3{font-size:15px;text-transform:uppercase;letter-spacing:.6px;color:#1F3B5F;border-bottom:2px solid #1F3B5F;padding-bottom:4px;margin-bottom:8px}
+.map-group a{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:7px 10px;text-decoration:none;border-bottom:1px solid #eee}
+.map-group a:hover{background:#F2DCDB}
+.progress{height:12px;background:#eee;border-radius:6px;overflow:hidden;margin:8px 0 4px}
+.progress div{height:100%;background:#00B050}
+</style>
+</head>
+<body>
+<div class="rotate" id="rotate">Gire o aparelho (modo paisagem) para visualizar melhor a tela.</div>
+<div id="app"></div>
+<div class="nav" id="nav"></div>
+
+<script>
+/* =========================================================================
+   SIMEO — Cidade do Rio de Janeiro · versão HTML
+   Estrutura: cada tela é registrada em SCREENS (id, título, grupo, render).
+   Navegação por hash (#/id) → o botão "voltar" do navegador funciona.
+   Telas sem render próprio usam o modelo "em construção" (a migrar do Excel).
+   ========================================================================= */
+const VERSAO = 'v0.5';
+const SCREENS = {};
+function reg(id, title, group, opts = {}) { SCREENS[id] = { id, title, group, ...opts }; }
+function slug(t) { return t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''); }
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+/* ---------- Registro das telas ---------- */
+reg('inicio', 'Tela inicial (SIMEO - figura)', 'Estrutura principal', { ready: true, render: renderHome });
+reg('matriz-risco', 'Matriz de Risco com exemplos de ocorrências', 'Matrizes', { ready: true, render: renderRisco });
+
+reg('matriz-decisoria', 'Matriz Decisória', 'Matrizes');
+reg('estagio-operacional', 'Estágio Operacional', 'Matrizes');
+reg('matriz-gut', 'Matrizes GUT específicas para diversas situações', 'Matriz GUT', { ready: true, render: renderGutHub });
+reg('matriz-axr', 'Matriz AxR', 'Matrizes', { sub: 'Atividades x Responsabilidades' });
+reg('matriz-comunicacao', 'Matriz de Comunicação', 'Matrizes');
+reg('pops', 'POPs', 'Matrizes', { sub: 'Procedimentos Operacionais Padrão' });
+reg('matriz-icr-s2id', 'Matriz ICR-S2ID', 'Matrizes', { sub: 'Identificação, Classificação e Registro de Desastres' });
+
+reg('planejamento', 'Planejamento', 'Fases', { sub: 'Ações prévias — anteriores ao desastre/emergência · Prevenção / Mitigação / Preparação' });
+reg('gestao-ocorrencia', 'Gestão da Ocorrência', 'Fases', { sub: 'Ações operacionais — no decorrer do incidente/desastre · Resposta / Recuperação' });
+reg('eventos-nao-planejados', 'Histórico de Eventos Não Planejados', 'Estrutura principal', { ready: true, render: () => renderList(HIST) });
+reg('acoes-planejadas', 'Eventos Planejados (Ações Planejadas)', 'Estrutura principal', { ready: true, render: () => renderList(PLAN) });
+
+reg('cco', 'CCO — Divisões de atuação em um Centro de Operações de Cidades', 'Estrutura principal', { ready: true, render: renderCCO });
+reg('cobrade', 'COBRADE', 'Estrutura principal', { ready: true, render: renderCobrade });
+reg('funcoes', 'Funções', 'Funções e referências');
+reg('simeo-tabela', 'SIMEO - tabela', 'Funções e referências');
+reg('consequencias', 'Consequências em: Pessoas, Patrimônio, Meio Ambiente, Imagem', 'Funções e referências');
+reg('estrutura-organizacional', 'Estrutura Organizacional e Contatos - PCRJ', 'Funções e referências');
+reg('mapa', 'Mapa de telas', 'Estrutura principal', { ready: true, render: renderMapa, hidden: true });
+
+/* ---------- Dados da Matriz de Risco ---------- */
+const COLS = [
+  { k: 'A', d: 'EXTREMAMENTE REMOTA' }, { k: 'B', d: 'REMOTA' }, { k: 'C', d: 'POUCO PROVÁVEL' },
+  { k: 'D', d: 'PROVÁVEL' }, { k: 'E', d: 'FREQUENTE' }];
+const ROWS = [
+  { n: 5, d: 'CATASTRÓFICA', it: true }, { n: 4, d: 'CRÍTICA', it: true }, { n: 3, d: 'MÉDIA' },
+  { n: 2, d: 'MARGINAL' }, { n: 1, d: 'DESPREZÍVEL' }];
+const NIVEL = { T: 'TOLERÁVEL', M: 'MODERADO', N: 'NÃO ACEITÁVEL' };
+const GRID = { 5: 'MMNNN', 4: 'TMMNN', 3: 'TTMMN', 2: 'TTTMM', 1: 'TTTTM' };
+const OCORR = {
+  '5A': [{ t: 'Acidente Petroquímico', red: 1, hz: 1 }, { t: 'Acidente na Ponte - aeronave ou navio', hz: 1 }, { t: 'Acidente ou atentado QBRN', hz: 1 }],
+  '5B': [{ t: 'Ocorrência grave em Equipamento Estratégico' }, { t: 'Desabamento de edificação grande porte' }, { t: 'Queda de aeronave de grande porte' }],
+  '4B': [{ t: 'Ocorrência grave em evento de grande porte' }, { t: 'Onda de Calor de MUITO ALTO IMPACTO' }, { t: 'Chuvas muito Intensas com graves consequências' }],
+  '4C': [{ t: 'Incêndio em edificação de grande porte', red: 1 }, { t: 'Acidente rodoviário ou ferroviário GRAVE' }, { t: 'Explosão de Grande Porte' }],
+  '3C': [{ t: 'Queda de estrutura - status médio' }, { t: 'Movimento de massa (deslizamento / rolamento)' }, { t: 'Rompimento de tubulação de grande porte' }],
+  '3D': [{ t: 'Chuvas Intensas de MÉDIO impacto' }, { t: 'Desabamento e/ou explosão em edificação' }, { t: 'Ocorrência em geral da cidade com status ALTO' }],
+  '2C': [{ t: 'Ocorrências com alta complexidade operacional' }, { t: 'Sequestros ou atentados com significativo impacto' }, { t: 'Surto de doença (DENGUE - por exemplo)' }],
+  '2D': [{ t: 'Ocorrência de Ressacas do mar' }, { t: 'Chuva na cidade' }, { t: 'Colisão de veículos - com óbito' }],
+  '2E': [{ t: 'Incêndio em VP, ou veículo de grande porte (CM / ON) parado, em via importante' }, { t: 'Ocorrências em geral da cidade com status médio' }],
+  '1E': [{ t: 'Acidente VP sem vítima - status normal' }, { t: 'Queda de árvore - status normal' }, { t: 'Ocorrências em geral da cidade com status normal' }],
+};
+// cada ocorrência vira uma tela própria (a migrar)
+for (const [cls, list] of Object.entries(OCORR)) {
+  const r = +cls[0], c = cls[1], lv = GRID[r]['ABCDE'.indexOf(c)];
+  list.forEach(o => {
+    o.id = 'oc-' + slug(o.t);
+    reg(o.id, o.t, 'Ocorrências (Matriz de Risco)', {
+      occ: { cls, nivel: lv, sev: `${r} — ${ROWS.find(x => x.n === r).d}`, freq: `${c} — ${COLS.find(x => x.k === c).d}`, hazid: !!o.hz }
+    });
+  });
+}
+
+/* ---------- Telas de lista: Histórico de Eventos Não Planejados / Eventos Planejados ---------- */
+const U = t => `<u>${t}</u>`;
+const HIST = {
+  tabs: [['SIMEO - figura', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['MATRIZ DECISÓRIA', 'matriz-decisoria'], ['AÇÕES PLANEJADAS (Grandes Eventos / Exercícios Simulados / Implosões / entre outros)', 'acoes-planejadas', 1]],
+  title: 'HISTÓRICO DE EVENTOS NÃO PLANEJADOS', titleBg: '#632523',
+  sub: 'Incidentes, acidentes e desastres ocorridos na cidade nas últimas décadas', subH: 62, gap: 24,
+  split: 1047, rowH: 51, pitch: 75, fs: 27, linkColor: '#215967', linkFs: 22, sameBg: false,
+  rows: [
+    [`HISTÓRICO DE ${U('DESASTRES TECNOLÓGICOS')} MARCANTES NA CIDADE`, 'Grandes Desastres Tecnológicos Marcantes para a cidade - clique aqui', 'hist-desastres-tecnologicos', 'Histórico de Desastres Tecnológicos marcantes na cidade'],
+    [`HISTÓRICO DE ${U('CHUVAS INTENSAS')} MARCANTES NA CIDADE`, 'Chuvas Intensas - clique aqui', 'hist-chuvas-intensas', 'Histórico de Chuvas Intensas marcantes na cidade'],
+    [`HISTÓRICO DE ${U('RESSACAS MARÍTIMAS')} MARCANTES NA CIDADE`, 'Grandes Ressacas na cidade - clique aqui', 'hist-ressacas', 'Histórico de Ressacas Marítimas marcantes na cidade'],
+    [`HISTÓRICO DE ${U('ONDAS DE CALOR')} NA CIDADE`, 'Ondas de Calor - clique aqui', 'hist-ondas-calor', 'Histórico de Ondas de Calor na cidade'],
+    [`HISTÓRICO DE ${U('OCORRÊNCIAS GRAVES EM EVENTOS DE GRANDE PORTE')} NA CIDADE`, 'Ocorrências em eventos de grande porte - clique aqui', 'hist-eventos-grande-porte', 'Histórico de ocorrências graves em eventos de grande porte'],
+    [`HISTÓRICO DE ${U('OCORRÊNCIAS GRAVES EM EQUIPAMENTOS ESTRATÉGICOS')} NA CIDADE`, 'Ocorrências em equipamentos estratégicos - clique aqui', 'hist-equipamentos-estrategicos', 'Histórico de ocorrências graves em equipamentos estratégicos'],
+    [`HISTÓRICO DE ${U('SEQUESTROS OU ATENTADOS')} COM IMPACTO SIGNIFICATIVO NA CIDADE`, 'Sequestros ou atentados com significativo impacto - clique aqui', 'hist-sequestros-atentados', 'Histórico de sequestros ou atentados com impacto significativo'],
+    ['EXEMPLO DE DETALHAMENTO DE DESASTRE DE CHUVA INTENSA', 'MATRIZ AxR DO DESASTRES DE 13/01/24 - clique aqui', 'axr-desastre-13-01-24', 'Matriz AxR do desastre de 13/01/24', { lb: '#C4BD97' }],
+    [`${U('CALENDÁRIOS COM VÁRIOS DADOS')} <span style="font-weight:600">(chuvas, vento, sirenes, ressaca) - 2023 a 2025</span>`, 'CALENDÁRIOS 2023, 2024 e 2025 com vários dados - clique aqui', 'calendarios-2023-2025', 'Calendários 2023, 2024 e 2025 (chuvas, vento, sirenes, ressaca)', { lb: '#4A452A', lc: '#fff' }],
+  ]
+};
+const PLAN = {
+  tabs: [['SIMEO - figura', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['HISTÓRICO DE EVENTOS NÃO PLANEJADOS (Acidentes, Incidentes e Desastres)', 'eventos-nao-planejados']],
+  title: 'EVENTOS PLANEJADOS', titleBg: '#006400',
+  sub: 'Eventos Esportivos e/ou Culturais de GRANDE MAGNITUDE ou Ações Operacionais como Exercícios Simulados / Implosões ou similares<br>precisam de uma série de ações prévias integradas e coordenadas entre os mais diversos órgãos envolvidos (direta ou indiretamente)', subH: 96, gap: 24,
+  split: 1075, rowH: 61, pitch: 110, fs: 27, linkColor: '#0000FF', linkFs: 20, sameBg: true,
+  rows: [
+    [`HISTÓRICO DE ${U('GRANDES EVENTOS')} MARCANTES NA CIDADE`, 'Grandes Eventos Marcantes para a cidade - clique aqui', 'grandes-eventos-marcantes', 'Grandes Eventos marcantes na cidade', { lb: '#D9D9D9' }],
+    [`REALIZAÇÃO DE ${U('IMPLOSÕES')} NA CIDADE (Perimetral, Gama Filho etc)`, 'HISTÓRICO DE IMPLOSÕES - clique aqui', 'historico-implosoes', 'Histórico de Implosões na cidade', { lb: '#BFBFBF' }],
+    [`TIPOS DE ${U('EXERCÍCIOS SIMULADOS')} REALIZADOS NA CIDADE`, 'Exercícios Simulados Realizados - clique aqui', 'exercicios-simulados', 'Exercícios Simulados realizados na cidade', { lb: '#D9D9D9' }],
+    [`REGISTRO E ACOMPANHAMENTO DE ${U('EVENTOS NA CIDADE')}`, 'Planilha de Planejamento de Eventos - clique aqui', 'planilha-planejamento-eventos', 'Planilha de Planejamento de Eventos', { lb: '#BFBFBF' }],
+    [`HISTÓRICO DE PARTICIPAÇÃO EM ${U('EVENTOS DE RRD')} RELEVANTES`, 'Histórico de Eventos de RRD com participação de integrantes da DC - clique aqui', 'eventos-rrd', 'Eventos de RRD com participação de integrantes da DC', { lb: '#D9D9D9' }],
+    ['EXEMPLO DE PLANEJAMENTO E OPERAÇÃO DE UM GRANDE SHOW NA CIDADE', 'DETALHES DO PLANEJAMENTO E OPERAÇÃO DO SHOW DA MADONNA - clique aqui', 'show-madonna', 'Planejamento e operação do show da Madonna', { lb: '#C4BD97' }],
+  ]
+};
+HIST.rows.forEach(r => reg(r[2], r[3], 'Eventos Não Planejados'));
+PLAN.rows.forEach(r => reg(r[2], r[3], 'Eventos Planejados'));
+
+/* ---------- CCO — Divisões de atuação ---------- */
+const CCO_COLS = [
+  { t: 'PREVENÇÃO', hb: '#17375E', ib: '#C5D9F1', ih: 76, items: [['MATRIZ DE RISCO', 'matriz-risco'], ['MATRIZ AxR PARA CHUVAS INTENSAS'], ['HAZID_MAE - análise de eventos'], ['EQUIPAMENTOS ESTRATÉGICOS - relação e nível de relevância'], ['MATRIZ DE PROBLEMAS INTEGRADOS']] },
+  { t: 'PROTOCOLOS', hb: '#000', ib: '#BFBFBF', ih: 76, items: [['FLUXO DE FUNÇÕES DE COORDENAÇÃO'], ['PROTOCOLO DE INCIDENTE E DESASTRES'], ['PLANILHA DE CONTROLE DE OCORRÊNCIAS'], ['PROTOCOLO DE INCIDENTES EM EVENTOS'], ['MATRIZ AxR PARA OCORRÊNCIAS EM GERAL'], ['DEMAIS PROTOCOLOS / PROCEDIMENTOS DE OPERAÇÃO'], ['ENVIO DE ALERTAS', null, 0, 38]] },
+  { t: 'DADOS', it: 1, id: 'cco-dados', hb: '#31859C', ib: '#B7DEE8', ih: 38, fs: 16, items: [['COBRADE - DESASTRES NATURAIS', 'cobrade-dinamica-naturais'], ['COBRADE - DESASTRES TECNOLÓGICOS', 'cobrade-dinamica-tecnologicos'], ['ROTAS - Waze e Google Maps'], ['ESCOLAS', null, 1], ['HOSPITAIS E POSTOS DE SAÚDE', null, 1], ['OBRAS', null, 1], ['WAZE', null, 1], ['RECURSOS GPS', null, 1], ['ÁRVORES E PRAÇAS', null, 1], ['PONTOS DE APOIO', null, 1], ['ÔNIBUS', null, 1], ['RADAR METEOROLÓGICO', null, 1], ['IOT SENSORES', null, 1]] },
+  { t: 'TOMADA DE<br>DECISÃO', hb: '#FFC000', ib: '#FFFFCC', ih: 76, items: [['MATRIZ DECISÓRIA - CONDIÇÕES METEOROLÓGICAS'], ['MATRIZ DECISÓRIA - MOBILIDADE'], ['MATRIZ DECISÓRIA - OCORRÊNCIAS'], ['MATRIZ DECISÓRIA - EVENTOS'], ['MATRIZ DECISÓRIA - OUTROS ÍNDICES'], ['MATRIZ DECISÓRIA - GERAL']] },
+  { t: 'RESPOSTA', hb: '#FF0000', ib: '#E6B8B7', ih: 76, items: [['MATRIZ DE IMPACTO PARA CHUVAS INTENSAS'], ['MATRIZ DE IMPACTO PARA DESASTRES EM GERAL'], ['MATRIZ DE IMPACTO PARA DENGUE'], ['MATRIZ DE IMPACTO PARA ONDA DE CALOR'], ['MATRIZ DE AÇÃO PARA MUDANÇA DE ESTÁGIO']] },
+  { t: 'RECUPERAÇÃO', hb: '#604A7B', ib: '#CCC0DA', ih: 228, items: [['FIDE'], ['FORMULÁRIO DA MATRIZ DE IMPACTO']] },
+];
+const CCO_EXTRA = [
+  ['cco-visao-sistemica', 'CCO - visão sistêmica'], ['cco-dados', 'Dados (CCO)'],
+  ['situacoes-monitoradas-cor', 'Situações Monitoradas - COR'],
+  ['fluxo-chuva-desastres-tecnologicos', 'Fluxo para evento de Chuva e/ou Desastres Tecnológicos'],
+  ['licoes-aprendidas', 'Eventos (Desastres) de grande escala - Lições Aprendidas'],
+  ['simulado-cor-cardeman', 'Simulado COR - Cardeman'],
+  ['cobrade-dinamica-naturais', 'COBRADE dinâmica - apenas Desastres Naturais'],
+  ['cobrade-dinamica-tecnologicos', 'COBRADE dinâmica - apenas Desastres Tecnológicos'],
+];
+CCO_EXTRA.forEach(([id, t]) => reg(id, t, 'CCO'));
+CCO_COLS.forEach(c => c.items.forEach(it => { if (!it[2]) { it[1] = it[1] || slug(it[0]); if (!SCREENS[it[1]]) reg(it[1], it[0], 'CCO — ' + c.t.replace('<br>', ' ')); } }));
+
+/* ---------- COBRADE ---------- */
+[['conceitos-defesa-civil', 'Conceitos de Defesa Civil - básico'], ['s2id-grau-intensidade', 'S2ID - grau de intensidade do Desastre'],
+ ['s2id-fide', 'S2ID & FIDE (apenas visualização)'], ['ics-teoria', 'ICS (teoria)']].forEach(([id, t]) => reg(id, t, 'COBRADE'));
+
+/* ---------- MATRIZES GUT ---------- */
+const GUT_LINKS = [
+  ['MATRIZ GUT PARA OCORRÊNCIAS EM VIA PÚBLICA / MOBILIDADE', 'gut-mobilidade', '#800080'],
+  ['MATRIZ GUT PARA INCÊNDIO / DESABAMENTO / EXPLOSÃO', 'gut-incendio', '#0000FF'],
+  ['MATRIZ GUT PARA DESLIZAMENTO', 'gut-deslizamento', '#0000FF'],
+  ['MATRIZ GUT PARA INUNDAÇÃO', 'gut-inundacao', '#0000FF'],
+  ['MATRIZ GUT UTILIZADA PELO COR EM 2023/2024', 'gut-cor', '#0000FF'],
+  ['MATRIZ DE RISCO', 'matriz-risco', '#FF0000'],
+  ['SIMEO - figura', 'inicio', '#FF0000', 36],
+  ['COBRADE', 'cobrade', '#0000FF'],
+  ['LISTA DE INCIDENTES COM FLUXOGRAMA GERAL', 'pop-cor', '#C00000'],
+];
+// faixas de classificação do Valor Final (limite superior de cada faixa — ajustáveis)
+const GUT_FAIXAS = [[4, 'BAIXA'], [7, 'MÉDIA'], [9.999, 'ALTA'], [10, 'MUITO ALTA']];
+const GR = {
+  DH: ['Danos Humanos', ['sem envolvidos', '1 envolvido', '2 a 4 envolvidos', 'mais de 4 envolvidos', '1 ferido (remoção)', 'mais de 1 ferido (remoção)', '1 ferido grave', 'mais de 1 ferido grave', '1 óbito', 'mais de 1 óbito']],
+  LOC: ['Local (Tipo de via)', ['rua sem saída', 'rua dentro de condomínio', 'via transversal', 'via transversal relevante', 'via longitudinal', 'via da orla', 'via com protocolo', 'via expressa ou Túnel', 'Rebouças', 'Av. Brasil ou L.V.']],
+  DATA: ['Data / hora', ['dia não útil entre 18h e 8h', 'domingo/feriado 8h às 18h', 'dia útil 11h às 15h ou 20h às 6h', 'sábado 8h às 18h', 'dia útil 20 às 22', 'dia útil 6h às 7h', 'dia útil 15 às 17', 'dia útil 9 às 11', 'dia útil 17 às 20', 'dia útil 7 às 9']],
+  OCUP: ['Ocupação da via', ['fora da via', 'fora da via', 'fora da via', 'até 1 metro de seção transvers.', 'até 1,5 metro de seção transvers.', 'mais de 25% da seção transv.', 'mais de 50% da seção transv.', 'SIGA E PARE', 'SIGA E PARE', 'interdição total']],
+  ORG: ['nº Órgão envolvidos', ['1', '1', '2', '2', '3', '3', 'mais de 3', 'mais de 4 ou algum eq. espec.', 'mais de 3 e guincho pesado', 'mais de 3 e helicóptero']],
+  AND: ['Andamento dos órgãos', ['no local', 'no local', 'ambos no local', '1 no local', '1 no local', '1 no local', 'nenhum no local', 'nenhum no local', 'nenhum no local', 'nenhum no local']],
+  DUR: ['Estimativa duração', ['5 minutos', '', '', 'até 30 minutos', 'mais de 30 min', 'mais de 30 min', 'mais de 30 min', 'mais de 1h', 'mais de 2h', 'mais de 3h']],
+  COM: ['Comoção Social<br><span style="font-weight:400">(repercussão nas R.S.)</span>', ['sem repercussão', 'sem repercussão', 'post eventual', 'alguns posts', 'vários posts', 'posts e comentários', 'muitos posts e comentários', 'alta repercussão', 'alta repercussão', 'alta repercussão']],
+};
+const IMP = a => ['Impacto secundário', ['nenhum', 'pouco provável', 'pequeno impacto', 'pequeno impacto', 'considerável impacto', 'considerável impacto', 'considerável impacto', ...a]];
+const TABS_GUT = [['SIMEO', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['MATRIZES - geral', 'matrizes-geral'], ['MATRIZ GUT - links', 'matriz-gut'], ['MATRIZ GUT - COR', 'gut-cor']];
+const GUT = {
+  'gut-mobilidade': {
+    title: 'MATRIZ GUT PARA OCORRÊNCIAS EM VIA PÚBLICA / MOBILIDADE', short: 'Matriz GUT para ocorrências em via pública / mobilidade', blueTabs: 0,
+    tabs: [['SIMEO - figura', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['CCO - visão sistêmica', 'cco-visao-sistemica', 1], ['MATRIZES - geral', 'matrizes-geral'], ['MATRIZ GUT - links', 'matriz-gut'], ['MATRIZ GUT - COR', 'gut-cor']],
+    rows: [GR.DH, GR.LOC, ['Veículos impactados', ['1 VP', '2 VP ou 1 MT', 'mais de 2 VP', 'VP + ON ou CM', '1 VP + 1 MT', '1 MT + ON ou CM', 'mais de 2 (com MT/ON/CM)', 'veículos grandes', 'veículos grandes', 'veículos grandes']],
+      ['Data / hora<br><br>E/OU<br><br>PERÍODO', GR.DATA[1], { h: 124, extra: [[0, 3, 'férias escolares'], [4, 6, 'período escolar e/ou universitário'], [7, 8, 'rush de volta de feriado (24h antes)'], [9, 9, 'rush de volta de feriado (PICO)']] }],
+      GR.OCUP, GR.ORG, GR.AND, GR.DUR, IMP(['grande impacto', 'grande impacto', 'grande impacto']), GR.COM],
+    w: [2, 1, 1, 1, 1, 0, 0, 1, 1, 1], s: [8, 8, 8, 4, 10, 7, null, 10, 7, 6], fs: 14,
+  },
+  'gut-incendio': {
+    title: 'MATRIZ DE CLASSIFICAÇÃO DOS INCÊNDIOS / DESABAMENTOS / EXPLOSÕES', short: 'Matriz GUT — Incêndios / Desabamentos / Explosões', blueTabs: 1,
+    tabs: [['SIMEO', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['INCÊNDIO - entrada', 'incendio-entrada'], ['Acidente Petroquímico - entrada', 'oc-acidente-petroquimico'], ['MATRIZ GUT - links', 'matriz-gut'], ['MATRIZ GUT - COR', 'gut-cor']],
+    rows: [GR.DH, GR.LOC, ['Tipo de Edificação', ['provisória e/ou madeira', 'sem estrutura', 'pavimento único e até 40m²', 'pequeno porte', 'mais de 1 pavimento', 'multifamiliar e/ou com 2 pav', 'acima de 2 pav (comercial ou residencial)', 'acima de 2 pav ou térrea mais de 1000m²', 'acima de 5 pavimentos', 'acima de 10 pavimentos']], GR.DATA,
+      ['Área atingida', ['pequena área', 'pequena área', 'pequena área', 'um cômodo', 'um cômodo', 'vários cômodos', 'imóvel inteiro', 'andar inteiro ou imóvel superior', 'mais de 50% da edificação', 'edificação total']], GR.ORG, GR.AND,
+      GR.DUR, IMP(['grande impacto', 'desabamento parcial', 'desabamento total']), GR.COM],
+    w: [1, 0, 1, 1, 1, 1, 0, 1, 1, 1], s: [1, 2, 8, 1, 10, 5, 1, 10, 3, 7],
+  },
+  'gut-deslizamento': {
+    title: 'MATRIZ DE CLASSIFICAÇÃO DOS MOVIMENTOS DE MASSA (Deslizamentos / rolamentos) NA CIDADE', short: 'Matriz GUT — Movimentos de massa (deslizamentos / rolamentos)', blueTabs: 1, tabs: TABS_GUT,
+    rows: [GR.DH, GR.LOC, ['Volume e tipo de material', ['solo e pequeno porte (até 1m³)', 'solo e pequeno porte (até 2m³)', 'pequeno porte (até 3m³)', 'solo até 4m³ ou rocha até 2m³', 'solo até 10m³ ou rocha até 5m³', 'médio porte (ou algum imóvel envolvido)', 'médio porte e algum imóvel envolvido', 'grande porte ou imóvel envolvido', 'desabamento de imóvel ou mais de 15m³ de material', 'desabamento de imóveis ou mais de 30m³ de material']], GR.DATA,
+      GR.OCUP, GR.ORG, GR.AND, GR.DUR, IMP(['grande impacto', 'desabamento parcial', 'desabamento total']), GR.COM],
+    w: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], s: [1, 6, 8, 4, 6, 8, 1, 9, 5, 8],
+  },
+  'gut-inundacao': {
+    title: 'MATRIZ DE CLASSIFICAÇÃO DOS ALAGAMENTOS E INUNDAÇÕES NA CIDADE', short: 'Matriz GUT — Alagamentos e inundações', blueTabs: 1, tabs: TABS_GUT,
+    rows: [GR.DH, GR.LOC, ['Transporte', ['sem alteração nos transportes de modais', 'pequena alteração em algum dos modais', 'pequena alteração em algum dos modais', 'pequena alteração em mais de 1 modal', 'média alteração em alguns dos modais', 'média alteração em mais de 1 dos modais', 'grande alteração em um dos modais', 'grande alteração em mais de 1 dos modais', 'interrupção em 1 dos modais', 'interrupção de todos os modais'], { h: 82 }], GR.DATA,
+      ['Ocupação da via', ['fora da via', 'fora da via', 'fora da via', 'na via mas com passagem', 'na via mas com parte da via comprometida', 'na via com toda ela comprometida mas com passagem de veículos', 'na via com toda ela comprometida mas com dificuldade de passagem de veículos em parte da via', 'na via com parte dela comprometida e sem condições de passagem de veículos em uma das partes', 'na via com toda ela comprometida e sem condições de passagem de veículos em grande parte da via', 'interdição total'], { h: 122, fs: 13.5 }],
+      GR.ORG, GR.AND, ['Estimativa duração', ['5 minutos', '10 min', '20 minutos', '30 minutos', 'mais de 30 min', 'mais de 30 min', 'mais de 30 min', 'mais de 1h', 'mais de 2h', 'mais de 3h']], IMP(['grande impacto', 'grande impacto', 'impacto total do entorno']), GR.COM],
+    w: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1], s: [1, 6, 8, 4, 6, 8, 1, 9, 5, 8],
+  },
+};
+for (const [id, g] of Object.entries(GUT)) reg(id, g.short, 'Matriz GUT', { ready: true, render: renderGUT, gut: g });
+[['gut-cor', 'Matriz GUT utilizada pelo COR em 2023/2024'], ['matrizes-geral', 'Matrizes - geral'], ['incendio-entrada', 'Incêndio - entrada'],
+ ['escala-relevancia', 'Escala de Relevância'], ['matriz-complexidade', 'Matriz de Complexidade']].forEach(([id, t]) => reg(id, t, 'Matriz GUT'));
+const GUT_STATE = {};
+function gutState(id) { return GUT_STATE[id] || (GUT_STATE[id] = { w: [...GUT[id].w], s: [...GUT[id].s] }); }
+function gutSet(id, r, c) { const st = gutState(id); st.s[r] = st.s[r] === c + 1 ? null : c + 1; refresh(); }
+function gutPeso(id, r) { const st = gutState(id); st.w[r] = (st.w[r] + 1) % 4; refresh(); }
+function gutReset(id) { delete GUT_STATE[id]; refresh(); }
+function gutValor(st) { let n = 0, d = 0; st.s.forEach((v, i) => { if (v && st.w[i]) { n += v * st.w[i]; d += st.w[i]; } }); return d ? n / d : 0; }
+const fmt2 = v => v.toFixed(2).replace('.', ',');
+
+/* ---------- POP - COR ---------- */
+const POP_LINK = 'https://drive.google.com/file/d/1pUCxHLeyxkPYQoNMghFWmiQTCBL1bejP/view?usp=drive_link';
+const INCIDENTES = [
+  ['Acidente / Enguiço Sem Vítimas', 'Acidente com Vítimas', '*Acidente com óbito', 'Incêndio em Veículo(s)', "Bolsão d'água em via", 'Manifestação em local público', '*Incêndio em Imóvel', 'Sinais de Trânsito com Mau Funcionamento', 'Reintegração de Posse'],
+  ['Queda de Árvore', 'Queda de Poste', 'Acidente com Queda de Carga', 'Incêndio em Área de Vegetação - Via Pública', 'Incêndio Dentro de Túneis', 'Vazamento de Água / Esgoto', 'Falta Crítica de Energia / Apagão', 'Implosão', 'Escapamento de Gás'],
+  ['Evento Não Programado', 'Atropelamento', 'Afundamento de Pista / Buraco na Via', 'Abalroamento', 'Obra em local público', 'Operação Policial', 'Deslizamento', 'Acionamento de Sirenes', 'Alagamento'],
+  ['*Enchente', "Lâmina d'água", 'Acidente Ambiental', 'Incidente com bueiro', 'Incêndio em vegetação', 'Queda de árvore sobre fiação', 'Resíduo na Via', 'Resgate ou remoção de animais', 'Remoção de animal morto na areia'],
+  ['Resgate de animal marinho', 'Animal em local público', 'Queda de estrutura de alvenaria', 'Queda de carga viva de grande porte', 'Queda de carga viva de pequeno porte', 'Aeroporto', 'Prontidão Ciclovia', 'Posicionamento em ciclovia', 'Interdição em ciclovia'],
+];
+reg('pop-cor', 'Procedimento Operacional Padrão (POP) - COR', 'POPs', { ready: true, render: renderPOP });
+reg('pops-geral-cor', 'POPs - geral - COR', 'POPs');
+INCIDENTES.flat().filter(t => t[0] === '*').forEach(t => reg('pop-' + slug(t.slice(1)), 'POP — ' + t.slice(1), 'POPs'));
+
+/* ---------- Ocorrência de Acidente Petroquímico ---------- */
+[['acoes-gestao-risco', 'Ações de Gestão do Risco (Prevenção / Preparação / Mitigação)'], ['hazid-petroquimico', 'HAZID específico — Acidente Petroquímico'],
+ ['axr-petroquimico', 'Matriz AxR específica — Acidente Petroquímico'], ['fluxograma-ativacao-matrizes', 'Fluxograma de ativação das matrizes']].forEach(([id, t]) => reg(id, t, 'Ocorrências (Matriz de Risco)'));
+
+/* ---------- Eventos de grande porte ---------- */
+const GRANDES = [
+  ['1985', '11 a 20 de janeiro', 'ROCK IN RIO - original 1985', 'A primeira edição do Rock in Rio foi realizada no Rio de Janeiro, entre 11 e 20 de janeiro de 1985 em uma área especialmente construída para receber o evento. O local, um terreno de 250 mil metros quadrados que fica próximo ao Riocentro, em Jacarepaguá, ficou conhecido como "Cidade do Rock" e contava com o maior palco do mundo já construído até então: com 5 mil', 'MUSICAL', 55],
+  ['1992', '3 a 14 de junho', 'RIO ECO 92', 'A Conferência das Nações Unidas sobre Meio Ambiente e Desenvolvimento (CNUMAD), também conhecida como Eco-92, Cúpula da Terra, Cimeira do Verão, Conferência do Rio de Janeiro e Rio 92, foi uma conferência de chefes de estado organizada pelas Nações Unidas e realizada de 3 a 14 de junho de 1992 na cidade do Rio de Janeiro, no Brasil. Seu objetivo foi debater os', 'CONFERÊNCIA DA ONU', 55],
+  ['2007', '13 a 29 de julho', 'JOGOS PAN AMERICANOS - RIO 2007', 'Os Jogos Pan-Americanos de 2007, oficialmente denominados XV Jogos Pan-Americanos, foram um evento multiesportivo realizado em julho na cidade do Rio de Janeiro, no Brasil. Durante os dezessete dias de competições, 5633 atletas de 42 países competiram em 332 eventos de 47 modalidades.', 'MULTIESPORTIVO DAS AMÉRICAS', 55],
+  ['2012', '13 a 22 de junho', 'RIO + 20', null, 'CONFERÊNCIA DA ONU', 42],
+  ['2013', '23 a 28 de julho', 'JORNADA MUNDIAL DA JUVENTUDE', null, 'RELIGIOSO DA IGREJA CATÓLICA', 42],
+  ['2013', '15 a 30 de junho', 'Copa das Confederações FIFA', null, 'ESPORTIVO MUNDIAL DE FUTEBOL', 42],
+  ['2014', '12/06 a 13/07', 'COPA DO MUNDO FIFA - 2014', null, 'ESPORTIVO MUNDIAL DE FUTEBOL', 42],
+  ['2015', 'vários meses', 'EVENTOS TESTE - Jogos Olímpicos RIO 2016', null, 'MULTIESPORTIVO MUNDIAL', 42],
+  ['2016', '5 a 21 de agosto', 'JOGOS OLÍMPICOS - RIO 2016', null, 'MULTIESPORTIVO MUNDIAL', 42],
+  ['2024', '18 e 19 de novembro', 'REUNIÃO DO G20', '<i>A cúpula do G20 Rio de Janeiro 2024 será a décima nona reunião do Grupo dos Vinte (G20) que ocorrerá na cidade do Rio de Janeiro, capital do estado do Rio de Janeiro no Brasil, entre os dias 18 e 19 de novembro de 2024, sendo a sede no Museu de Arte Moderna do Rio de Janeiro (MAM Rio) e sendo a primeira vez que o país</i>', 'CONFERÊNCIA GLOBAL', 55],
+];
+const LINHA_TEMPO = [['2011', 'Carnaval|Jogos Mundiais Militares|Rock In Rio|Réveillon'], ['2012', 'Carnaval|Rio +20|Réveillon'], ['2013', 'Carnaval|Copa das Confederações|JMJ|Rock In Rio|Réveillon'], ['2014', 'Carnaval|Copa do Mundo|Lideranças C40|Réveillon'], ['2015', 'Carnaval|Rock In Rio|Réveillon'],
+  ['2016', 'Carnaval|Olimpíadas Rio2016|Réveillon'], ['2017', 'Carnaval|Rock In Rio|Réveillon'], ['2018', 'Carnaval|Réveillon'], ['2019', 'Carnaval|Copa América|Rock In Rio|Réveillon'], ['2020', 'Carnaval']];
+[['lista-geral-eventos-rotina', 'Lista geral de grandes eventos de rotina na cidade']].forEach(([id, t]) => reg(id, t, 'Eventos Planejados'));
+
+/* ---------- Implosões ---------- */
+const IMPLOSOES = [
+  ['28/04/2024', 'CLUBE DOS PORTUÁRIOS', 'SANTO CRISTO', 'O imóvel de mais de 30 mil m² e a área da implosão tem cerca de 1.500 m² em prédio de 19 metros de altura. O local estava abandonado há mais de 10 anos e foi integrado ao patrimônio do fundo de investimento imobiliário administrado pela Caixa em 2014. Foram necessários 75 quilos de explosivos distribuídos em 554 pontos para derrubar a estrutura.', '', ''],
+  ['05/11/2023', '*PRÉDIOS DA ANTIGA UNIVERSIDADE GAMA FILHO|#0000FF|implosao-gama-filho', 'PIEDADE', 'Os quatro prédios da antiga Universidade Gama Filho em Piedade, na Zona Norte do Rio, foram implodidos para a construção de um parque (Parque Piedade). Cerca de 700 imóveis foram desocupados para que não houvesse riscos a nenhum morador', '', ''],
+  null,
+  ['23/09/2018', 'PREDIOS NO COMPLEXO JAMBALAIA', 'CAMPO GRANDE', "Os cinco predios abrigavam cerca de 280 familias, que viviam no local em situacao de risco. Elas foram removidas pela prefeitura e vao receber aluguel social. Posteriormente, sera construido um condominio do programa 'Minha Casa Minha Vida', onde os antigos moradores serao realocados. No local, Crivella foi quem acionou o botao dos 150 quilos de explosivos", '-22.895862', '-43.584269'],
+  ['26/08/2018', 'ANTIGO PREDIO DO MINISTERIO DA FAZENDA', 'MANGUEIRA', 'O edificio, no numero 458 da Rua Visconde de Niteroi, que era ocupado por 69 familias, tinha problemas estruturais e foi ao chao em poucos segundos, apos o uso de 60 kg de explosivos. No terreno, sera erguido um condominio do programa Minha Casa Minha Vida, com 120 unidades.', '-22.907279', '-43.237084'],
+  ['10/06/2018', 'SEGUNDO PREDIO DO IBGE', 'MANGUEIRA', 'A primeira fase da implosao foi realizada no dia 13 de maio. No terreno, sera erguido um condominio do programa habitacional Minha Casa Minha Vida. As 256 familias que moravam nas construcoes foram cadastradas pelo municipio e estao recebendo R$ 400 de aluguel social enquanto aguardam as chaves de suas casas.', '-22.902320', '-43.240479'],
+  ['13/05/2018', 'ANTIGO PREDIO DO IBGE', 'MANGUEIRA', 'O predio maior foi implodido neste dia (13/05 - dia das maes) e um menor da frente foi implodido no dia 10/06', '-22.902320', '-43.240479'],
+  ['15/05/2016', 'HOSPITAL PADRE OLIVERIO KRAEMER', 'REALENGO', 'Com o objetivo de minimizar transtornos - como excesso de barulho e poeira - aos pacientes do Albert Schweitzer e moradores do entorno, os tecnicos optaram por um metodo diferenciado de implosao, denominado linha silenciosa com iniciacao eletronica. Plano de Acao disponivel em http://bit.ly/implosao_planodeacao_OK', '-22.866936', '-43.441836'],
+  ['19/07/2015', 'ANTIGA FABRICA DE CERVEJA', 'ZONA OESTE', 'O predio foi abaixo em apenas dez segundos e foram usados 300 quilos de explosivos.', '-22.874728', '-43.420645'],
+  ['18/05/2014', 'FABRICA DE CIMENTO RIO BRANCO', 'PARADA DE LUCAS', 'A orientacao da Defesa Civil era para que moradores de uma area de 150 metros no entorno da fabrica saissem de suas casas uma hora antes da implosao.', '-22.818569', '-43.304773'],
+  ['24/11/2013', '*PERIMETRAL (viaduto)|#FF0000|implosao-perimetral', 'CENTRO', 'extensao de 1.050 metros, os engenheiros utilizaram 1.200 kg de explosivos e o processo demorou cinco segundos', '-22.893749', '-43.198231'],
+  ['10/11/2012', 'ANTIGO PREDIO DA MANCHETE', 'ESTÁCIO', 'No terreno estava previsto a construcao de dois blocos de sete andares e 91 apartamentos de dois e três quartos.', '-22.913658', '-43.203083'],
+  ['02/09/2012', 'ANTIGA FABRICA DE PRODUTOS QUIMICOS (RHEEM)', 'BENFICA', 'Para garantir a seguranca da populacao, uma area de raio de 150 metros a partir da antiga fabrica foi isolada às 5h, duas horas antes da implosao. Neste periodo ficou interditada para a circulacao de pessoas e veiculos as vias da regiao isolada.', '-22.887453', '-43.231686'],
+  ['05/02/2012', 'TERMINAL DA PAVUNA', 'PAVUNA', 'Foram usados 250 quilos de explosivos. Depois de retirado, o material implodido sera reciclado e utilizado como aterro em intervencoes da Secretaria municipal de Obras, de acordo com a prefeitura.', '-22.804746', '-43.363602'],
+  ['26/06/2011', 'MOINHO MARILU', 'ZONA PORTUARIA', 'No terreno de 13 mil metros quadrados sera erguido um predio corporativo de 20 pavimentos', '-22.895153', '-43.213858'],
+  ['19/12/2010', 'HOSPITAL DO FUNDAO (anexo)', 'ILHA DO FUNDAO', '', '-22.843626', '-43.237143'],
+  ['01/12/2009', 'ESQUELETO E HE MAN', 'SANTA CRUZ', '', '-22.926098', '-43.690417'],
+];
+[['implosao-gama-filho', 'Implosão — Prédios da antiga Universidade Gama Filho'], ['implosao-perimetral', 'Implosão — Perimetral (viaduto)'],
+ ['matriz-axr-implosoes', 'Matriz AxR - implosões'], ['implosao-exemplo-planejamento', 'Implosão - exemplo de planejamento']].forEach(([id, t]) => reg(id, t, 'Eventos Planejados'));
+
+/* ---------- Eventos técnico-científicos de RRD ---------- */
+const RRD = [
+  ['2024_julho', '*SETEC-RRD-RIO 2024 (Seminário Técnico-Científicos de Redução de Risco de Desastres)', 'Rio de Janeiro - RJ', 'vários integrantes do CEPED / CT'],
+  ['2024_abril', 'Palestra S2ID – SIMPDEC/Matriz ICR-S2ID', 'Campinas – SP', 'Marcelo Aires'],
+  ['2023_junho', 'I Fórum Intermunicipal de Proteção e Defesa Civil', 'Rio de Janeiro - RJ', 'Subsecretário Rodrigo Gonçalves, Marcelo Aires, Araújo'],
+  ['2021_abril', 'Workshop de celebração dos 10 anos do Sistema de Alerta e Alarme Comunitário', 'Rio de Janeiro - RJ', 'Subsecretário Marcio Motta, Marcelo Abelheira e demais'],
+  ['2019_setembro', 'Congresso Brasileiro de RRD', 'Belém - PA', 'Alexander Araújo'],
+  ['2019_julho', '*I SETEC-RRD-RIO (Seminário Técnico-Científicos de Redução de Risco de Desastres)', 'Rio de Janeiro - RJ', 'vários integrantes do CEPED / CT'],
+  ['2019_junho', 'Clima e Segurança na América Latina - Instituto Igarapé', 'Rio de Janeiro - RJ', 'Marcelo Abelheira e Walter Fonseca'],
+  ['2019_junho', '*C40 URBAN FLOODING WORKSHOP', 'São Paulo - SP', 'Marcelo Abelheira'],
+  ['2019_maio', 'Plataforma Global de RRD em Genebra', 'Genebra - Suiça', 'Livia Lomar'],
+  ['2018_novembro', 'Seminário de Pesquisas em RRD - SEREDE', 'Curitiba - PR', 'Sergio Gomes, Thiago Correa e Marcelo Abelheira'],
+  ['2018_outubro', 'Coloquio de Defesa Civil de Petrópolis', 'Petropolis - RJ', 'Marcelo Abelheira, Ivana Soares e vários outros'],
+  ['2018_setembro', 'Seminário do SIURB / IPP', 'Rio de Janeiro - RJ', 'Alexander Araújo, Marcelo Abelheira'],
+  ['2018_agosto', 'Workshop de Meteorologia e Defesa Civil', 'São João de Meriti - RJ', 'Ivana Soares, Geizon Silva e mais 6 integrantes'],
+  ['2018_julho', '*ENCONTRO NACIONAL DE DESASTRES', 'Porto Alegre - RS', 'Marcelo Abelheira'],
+  ['2018_junho', 'Plataforma Regional de RRD em Cartagena', 'Cartagena - Colômbia', 'Marcelo Abelheira'],
+  ['2018_março', 'Seminário Internacional de Proteção e Defesa Civil', 'Florianópolis - SC', 'Marcelo Abelheira'],
+  ['2017_outubro', 'Congresso Brasileiro de RRD', 'UERJ - Rio', 'Walter Fonseca e Marcelo Abelheira'],
+  ['2017_outubro', 'Coloquio de Defesa Civil de Petropolis', 'Petropolis - RJ', 'Jorge Domingues (palestrante), Walter Fonseca, Airton Moraes'],
+  ['2017_setembro', '*SEMINÁRIO DA NASA', 'Buenos Aires - Argentina', 'Marcelo Abelheira'],
+  ['2017_setembro', 'Forum Brasileiro de Educacao Ambiental', 'Balneario Camboriu - SC', 'Marcelo Abelheira'],
+  ['2017_agosto', 'Seminario de Gestao em Protecao e Defesa Civil', 'Juiz de Fora - MG', 'Marcelo Abelheira'],
+  ['2017_junho', 'Workshop BRAHVE', 'Sao Jose dos Campos - SP', 'Ivana Soares, Airton Moraes, Marcelo Abelheira'],
+  ['2017_maio', '*PLATAFORMA GLOBAL - UNDRR', 'Cancun - Mexico', 'Marcelo Abelheira'],
+  ['2016_novembro', 'Curso da JICA - Promotion of Mainstreaming Disaster Risk Reduction', 'Japao - Kobe', 'Alan Ribeiro de Oliveira'],
+  ['2016_novembro', 'Workshop da parceria com a NASA', 'Nova Iorque', 'Alexander Araújo'],
+  ['2016_maio', 'Reuniao do Comite Setorial de Gestao Integral de Risco da UCCI (capitais ibero-americanas)', 'Madrid - Espanha', 'Davi Becker'],
+  ['2015_junho', 'Curso da JICA - Community Based Disaster Risk Management', 'Japao', 'Walter Fonseca'],
+  ['2015_março', '*SENDAI 2015 (CONFERÊNCIA MUNDIAL DE RRD - Marco de Sendai)', 'Sendai - Japao', 'Marcelo Abelheira e Rodrigo Bissoli'],
+  ['2014_novembro', 'Conferencia Nacional de Protecao e Defesa Civil', 'Brasilia - DF', 'Ivana Soares, Sergio Gomes'],
+  ['2014_outubro', 'International Conference on Building Resilience e reuniao da ONU', 'Manchester - Inglaterra', 'Marcio Motta'],
+  ['2014_junho', 'Encontro Cidades Resilientes', 'Sao Paulo - SP', 'Marcelo Abelheira e Marcio Motta'],
+  ['2014_maio', 'Gerencia de Mudancas Climaticas - Palestra sobre acoes da SUBDEC', 'Vitoria - ES', 'Marcelo Abelheira'],
+  ['2013_outubro', 'Seminário Nacional sobre Saúde em Desastres', 'Brasilia - DF', 'Marcelo Abelheira'],
+  ['2013_setembro', 'Gerencia de Mudancas Climaticas - Palestra sobre acoes da SUBDEC', 'Porto Alegre - RS', 'Marcelo Abelheira'],
+  ['2013_agosto', 'Forum Nacional de Defesa Civil', 'Joinville - SC', 'Kellen Salles, Diego, Marcelo Abelheira, Marcio Motta'],
+  ['2013_março', 'Plataforma Global de RRD em Genebra', 'Genebra - Suica', 'Marcio Motta', 1],
+  ['2012_outubro', 'Reuniao da ONU - II Steering Commitee Meeting of Making Cities Resilient Campaign', 'Bangkok - Tailandia', 'Marcio Motta'],
+  ['2012_julho', 'Forum Nacional de Defesa Civil', 'Angra dos Reis - RJ', 'Marcelo Abelheira, Marcio Motta, Silva Costa, Orlando Sod…'],
+  ['2011_abril', 'Seminario Internacional de Desastres', 'Brasilia - DF', 'Marcelo Abelheira'],
+  ['2011_abril', 'Reuniao do Comite Setorial de Gestao Integral de Risco da UCCI (capitais ibero-americanas)', 'Buenos Aires - Argentina', 'Cel Silva Costa e Marcelo Abelheira', 1],
+  ['2010_marco', '1a Conferencia Nacional de Protecao e Defesa Civil', 'Brasilia - DF', 'Ines, Ivana, Marcelo, Andre, Sergio'],
+];
+RRD.forEach(r => { if (r[1][0] === '*') reg('rrd-' + slug(r[1].slice(1)).slice(0, 40), r[1].slice(1), 'Eventos de RRD'); });
+[['gestao-de-risco', 'Gestão de Risco'], ['mapeamento-de-riscos', 'Mapeamento de Riscos']].forEach(([id, t]) => reg(id, t, 'Eventos de RRD'));
+
+Object.assign(SCREENS['oc-acidente-petroquimico'], { ready: true, render: renderPetro, title: 'Ocorrência de Acidente Petroquímico' });
+Object.assign(SCREENS['grandes-eventos-marcantes'], { ready: true, render: renderGrandes });
+Object.assign(SCREENS['historico-implosoes'], { ready: true, render: renderImplosoes });
+Object.assign(SCREENS['eventos-rrd'], { ready: true, render: renderRRD });
+
+/* ---------- Utilitários de desenho ---------- */
+function box(x, y, w, h, cls, html, href, style = '') {
+  const st = `left:${x}px;top:${y}px;width:${w}px;height:${h}px;${style}`;
+  return href
+    ? `<a class="abs btn ${cls}" href="#/${href}" style="${st}">${html}</a>`
+    : `<div class="abs ${cls}" style="${st}">${html}</div>`;
+}
+// seta dupla "em bloco" (verde) entre dois pontos
+function blockArrow(x1, y1, x2, y2, sw = 11, hw = 25, hl = 34) {
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+  const b1 = [x1 + ux * hl, y1 + uy * hl], b2 = [x2 - ux * hl, y2 - uy * hl];
+  const P = (p, s) => `${(p[0] + nx * s).toFixed(1)},${(p[1] + ny * s).toFixed(1)}`;
+  const pts = [`${x1},${y1}`, P(b1, hw), P(b1, sw), P(b2, sw), P(b2, hw), `${x2},${y2}`, P(b2, -hw), P(b2, -sw), P(b1, -sw), P(b1, -hw)];
+  return `<polygon points="${pts.join(' ')}" fill="#4F6228" stroke="#385D8A" stroke-width="2.5" stroke-linejoin="round"/>`;
+}
+const arrowSvg = dir => `<svg width="30" height="26" viewBox="0 0 30 26" style="flex:none"><polygon fill="#fff" points="${dir < 0 ? '0,13 13,0 13,7 30,7 30,19 13,19 13,26' : '30,13 17,0 17,7 0,7 0,19 17,19 17,26'}"/></svg>`;
+
+/* =========================================================================
+   TELA INICIAL — SIMEO (figura)
+   ========================================================================= */
+function renderHome() {
+  const W = 1820, H = 910;
+  let h = '';
+  // topo
+  h += box(0, 0, 282, 100, 'pink light it b', '<span style="font-size:48px">CCO</span>', 'cco');
+  h += box(282, 3, 1256, 41, 'b', '<span style="font-size:31px;padding-right:70px;letter-spacing:.2px">SISTEMA INTEGRADO DE MATRIZES ESTRATÉGICAS E/OU OPERACIONAIS (SIMEO)</span>', null, 'background:#D9D9D9;border:2px solid #000');
+  h += box(1458, 6, 78, 36, 'it', '<span style="font-size:14px">funções</span>', 'funcoes', 'background:#7F7F7F;color:#eee;font-family:Georgia,serif');
+  h += box(286, 46, 121, 50, 'olive b', '<span style="font-size:22px">VIÉS</span>');
+  h += box(407, 46, 183, 25, 'tan b', '<span style="font-size:13px">ESTRATÉGICO / HISTÓRICO</span>');
+  h += box(590, 46, 948, 25, 'tan', '<span style="font-size:11.5px">Visando Registrar Eventos, ocorrências e situações em geral - servindo como: Arquivo / banco de dados; Lições Aprendidas; base para elaboração / atualização de Matrizes, Planos e Protocolos</span>', null, 'justify-content:flex-start;padding-left:10px');
+  h += box(407, 71, 183, 25, 'b', '<span style="font-size:13px">OPERACIONAL</span>', null, 'background:#EEECE1');
+  h += box(590, 71, 948, 25, '', '<span style="font-size:11.5px">Visando Organizar Ferramentas (Matrizes, Planos e Protocolos) para auxiliar nas diversas situações no Centro de Operações - ocorrências inesperadas ou planejadas no dia a dia da cidade</span>', null, 'background:#EEECE1;justify-content:flex-start;padding-left:10px');
+  h += box(1538, 0, 282, 100, 'pink light it b', '<span style="font-size:42px">COBRADE</span>', 'cobrade');
+
+  // laterais
+  h += box(3, 100, 201, 750, 'b', `<div style="display:flex;gap:26px;align-items:center;color:#fff">
+      <span class="vt it" style="font-size:66px;letter-spacing:1px">PLANEJAMENTO</span>
+      <span class="vt" style="font-size:19px;font-weight:600">AÇÕES PRÉVIAS - ANTERIORES AO DESASTRE/EMERGÊNCIA</span></div>`, 'planejamento', 'background:#4F6228');
+  h += box(204, 100, 78, 750, 'b', '<span class="vt" style="font-size:27px">PREVENÇÃO / MITIGAÇÃO / PREPARAÇÃO</span>', null, 'background:#C4D79B');
+  h += box(1538, 100, 200, 750, 'b', `<div style="display:flex;gap:22px;align-items:center;color:#fff">
+      <span class="vt it" style="font-size:66px;letter-spacing:1px">GESTÃO DA OCORRÊNCIA</span>
+      <span class="vt" style="font-size:18px;font-weight:600">AÇÕES OPERACIONAIS - NO DECORRER DO INCIDENTE / DESASTRE</span></div>`, 'gestao-ocorrencia', 'background:#FF3300');
+  h += box(1738, 100, 80, 750, 'b', '<span class="vt" style="font-size:27px">RESPOSTA / RECUPERAÇÃO</span>', null, 'background:#FA9C84');
+
+  // rodapé
+  h += box(3, 858, 775, 50, 'light it', '<span style="font-size:22px;font-weight:600">EVENTOS NÃO PLANEJADOS (Acidentes, Incidentes e Desastres)</span>', 'eventos-nao-planejados', 'background:#C4BD97');
+  h += box(778, 858, 278, 50, 'olive b', `<div style="display:flex;align-items:center;gap:20px">${arrowSvg(-1)}<span style="font-size:25px">HISTÓRICO</span>${arrowSvg(1)}</div>`);
+  h += box(1056, 858, 762, 50, 'light it', '<span style="font-size:22px;font-weight:600">AÇÕES PLANEJADAS (Grandes Eventos / Simulados / Implosões / similares)</span>', 'acoes-planejadas', 'background:#C4BD97');
+
+  // setas (atrás das caixas)
+  let s = `<svg class="layer" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <defs><marker id="ah" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#000"/></marker></defs>
+    <g fill="none" stroke="#000" stroke-width="4" marker-start="url(#ah)" marker-end="url(#ah)">
+      <path d="M546,328 Q600,195 768,184"/>
+      <path d="M1064,187 Q1238,200 1290,328"/>
+      <path d="M546,667 Q590,805 768,822"/>
+      <path d="M1064,820 Q1238,805 1284,664"/>
+      <path d="M495,414 L495,580"/>
+      <path d="M1336,414 L1336,580"/>
+    </g>
+    ${blockArrow(916, 224, 916, 428)}${blockArrow(918, 574, 918, 767)}
+    ${blockArrow(624, 384, 762, 456)}${blockArrow(624, 612, 762, 540)}
+    ${blockArrow(1208, 384, 1070, 456)}${blockArrow(1208, 612, 1070, 540)}
+  </svg>`;
+
+  // caixas do diagrama
+  const T = (t, fs = 23) => `<span class="it b" style="font-size:${fs}px">${t}</span>`;
+  h += s;
+  h += box(778, 104, 278, 51, 'maroon', T('MATRIZ DECISÓRIA', 21), 'matriz-decisoria');
+  h += box(778, 161, 278, 51, 'black', T('ESTÁGIO OPERACIONAL', 18), 'estagio-operacional');
+  h += box(375, 333, 231, 75, 'maroon', T('MATRIZ GUT'), 'matriz-gut');
+  h += box(1227, 333, 231, 75, 'maroon', T('MATRIZ AxR'), 'matriz-axr');
+  h += box(778, 433, 278, 127, '', `<span class="it b" style="font-size:39px;line-height:1.38;color:#F2F2F2">MATRIZ DE<br>RISCO</span>`, 'matriz-risco', 'background:#1F497D;border:2px solid #17375E');
+  h += box(375, 585, 231, 75, 'maroon', T('MATRIZ DE<br>COMUNICAÇÃO', 20), 'matriz-comunicacao', 'line-height:1.45');
+  h += box(1227, 585, 231, 75, 'maroon', T('POPs'), 'pops');
+  h += box(778, 773, 278, 77, 'black', `<div>${T('MATRIZ ICR-S2ID', 22)}<div class="it" style="font-size:11px;margin-top:3px;font-family:Georgia,serif">(Identificação, Classificação e Registro de Desastres)</div></div>`, 'matriz-icr-s2id');
+
+  return stage(W, H, h);
+}
+
+/* =========================================================================
+   MATRIZ DE RISCO COM EXEMPLOS DE OCORRÊNCIAS
+   ========================================================================= */
+function renderRisco() {
+  const W = 1880, H = 910, X0 = 200, CW = 321.6, Y0 = 220, RH = 128;
+  const BG = { T: '#00B050', M: '#FFFF00', N: '#FF0000' };
+  let h = '';
+  // coluna esquerda (atalhos)
+  h += box(5, 5, 193, 84, 'pink light it b', '<span style="font-size:23px">SIMEO - figura</span>', 'inicio', 'border:1px solid #999');
+  h += box(5, 90, 193, 43, 'pink light it b', '<span style="font-size:19px">SIMEO - tabela</span>', 'simeo-tabela', 'border:1px solid #999');
+  h += box(5, 134, 193, 37, 'pink light it b', '<span style="font-size:19px">CCO - atuações</span>', 'cco', 'border:1px solid #999');
+  h += box(5, 172, 193, 47, 'pink light it b', '<span style="font-size:20px">COBRADE</span>', 'cobrade', 'border:1px solid #999');
+  // título
+  h += box(200, 5, 1610, 71, 'b', '<span style="font-size:46px;color:#fff;letter-spacing:.5px">MATRIZ DE RISCO COM EXEMPLOS DE OCORRÊNCIAS</span>', null, 'background:#1F3B5F');
+  h += box(X0, 90, 1608, 44, 'b', '<span style="font-size:24px">FREQUÊNCIA / PROBABILIDADE DE ACONTECIMENTO</span>', null, 'border:2px solid #000;background:#fff');
+  COLS.forEach((c, i) => {
+    h += box(X0 + i * CW, 134, CW, 37, 'b', `<span style="font-size:18px">${c.k}</span>`, null, 'border:1px solid #000;background:#fff');
+    h += box(X0 + i * CW, 171, CW, 49, 'b', `<span style="font-size:14px">${c.d}</span>`, null, 'border:1px solid #000;background:#fff');
+  });
+  // eixo de severidade
+  h += box(5, Y0, 60, RH * 5, 'b', '<span class="vt" style="font-size:24px">SEVERIDADE / GRAVIDADE DA OCORRÊNCIA</span>', null, 'border:2px solid #000');
+  h += box(153, Y0, 45, RH * 5, 'it', '<span class="vt" style="font-size:15px;color:#0000FF;font-weight:600">CONSEQUÊNCIAS EM: Pessoas, Patrimônio, Meio Ambiente, Imagem - clique aqui</span>', 'consequencias', 'border:1px solid #000;background:#fff');
+  ROWS.forEach((r, j) => {
+    const y = Y0 + j * RH;
+    h += box(65, y, 40, RH, 'b', `<span style="font-size:18px">${r.n}</span>`, null, 'border:1px solid #000');
+    h += box(105, y, 48, RH, r.it ? 'it' : '', `<span class="vt" style="font-size:12px;font-weight:600">${r.d}</span>`, null, 'border:1px solid #000');
+    COLS.forEach((c, i) => {
+      const lv = GRID[r.n][i], key = `${r.n}${c.k}`, items = OCORR[key] || [];
+      const hc = lv === 'N' ? 'color:#A00000' : '';
+      h += `<div class="mr-cell" style="left:${X0 + i * CW}px;top:${y}px;width:${CW}px;height:${RH}px;background:${BG[lv]}">
+        <div class="mr-head" style="${hc}">${key} ${NIVEL[lv]}</div>
+        <div class="mr-items">${items.map(o => `<a class="oc${o.red ? ' red' : ''}" href="#/${o.id}" title="Abrir: ${esc(o.t)}">${esc(o.t)}${o.hz ? '<span class="hazid">HAZID</span>' : ''}</a>`).join('')}</div>
+      </div>`;
+    });
+  });
+  // lateral direita e rodapé
+  h += box(1826, 90, 50, 770, 'pink light it b', '<span class="vt" style="font-size:19px">ESTRUTURA ORGANIZACIONAL E CONTATOS - PCRJ</span>', 'estrutura-organizacional');
+  h += box(5, 868, 838, 38, 'it b', '<span style="font-size:20px;color:#fff">HISTÓRICO DE EVENTOS NÃO PLANEJADOS (Acidentes, Incidentes e Desastres)</span>', 'eventos-nao-planejados', 'background:#632523');
+  h += box(843, 868, 967, 38, 'it b', '<span style="font-size:20px;color:#fff">AÇÕES PLANEJADAS (Grandes Eventos / Exercícios Simulados / Implosões / entre outros)</span>', 'acoes-planejadas', 'background:#0B6B23');
+  return stage(W, H, h);
+}
+
+/* =========================================================================
+   TELAS DE LISTA (Histórico de Eventos Não Planejados / Eventos Planejados)
+   ========================================================================= */
+function tabs(list, x, y, w, h) {
+  return `<div class="abs" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:#F2DCDB;justify-content:space-around">${list.map(([t, id, blue]) => `<a class="tab${blue ? ' blue' : ''}" href="#/${id}">${t}</a>`).join('')}</div>`;
+}
+function renderList(c) {
+  const W = 1880, IW = 1820;
+  let h = tabs(c.tabs, 5, 2, IW, 32);
+  h += box(5, 55, IW, 72, 'b', `<span style="font-size:48px;color:#fff;letter-spacing:.3px">${c.title}</span>`, null, `background:${c.titleBg}`);
+  h += box(5, 140, IW, c.subH, 'b', `<span style="font-size:26px;line-height:1.45">${c.sub}</span>`, null, 'background:#D8E4BC');
+  let y = 140 + c.subH + c.gap;
+  c.rows.forEach(([label, link, id, , o = {}]) => {
+    const lb = o.lb || '#BFBFBF', rb = c.sameBg ? lb : '#D9D9D9';
+    h += box(5, y, c.split, c.rowH, 'b', `<span style="font-size:${c.fs}px">${label}</span>`, null, `background:${lb};border:2px solid #000;border-right:none;color:${o.lc || '#111'}`);
+    h += box(5 + c.split, y, IW - c.split, c.rowH, 'light it', `<span style="font-size:${c.linkFs}px;font-weight:600">${link}</span>`, id, `background:${rb};border:2px solid #000;border-left:none;justify-content:flex-start;padding-left:${c.sameBg ? 14 : 6}px;color:${c.linkColor}`);
+    y += c.pitch;
+  });
+  return stage(W, y - c.pitch + c.rowH + 14, h);
+}
+
+/* =========================================================================
+   CCO — DIVISÕES DE ATUAÇÃO EM UM CENTRO DE OPERAÇÕES DE CIDADES
+   ========================================================================= */
+function renderCCO() {
+  const W = 1840, H = 900, CW = 294, GAP = 12, Y = 136, HH = 126;
+  let h = '';
+  [['SIMEO - figura', 'inicio', 5], ['SIMEO - tabela', 'simeo-tabela', 305], ['MATRIZ DE RISCO', 'matriz-risco', 615], ['CCO - visão sistêmica', 'cco-visao-sistemica', 1228]]
+    .forEach(([t, id, x]) => h += box(x, 2, 295, 33, 'pink light it', `<span style="font-size:21px;font-weight:600;color:#111">${t}</span>`, id));
+  h += box(7, 45, 1821, 82, 'b', '<span style="font-size:50px;color:#fff;letter-spacing:.3px">DIVISÕES DE ATUAÇÃO EM UM CENTRO DE OPERAÇÕES DE CIDADES</span>', null, 'background:#632523');
+  CCO_COLS.forEach((c, i) => {
+    const x = 7 + i * (CW + GAP);
+    h += box(x, Y, CW, HH, c.it ? 'it b' : 'b', `<span style="font-size:${c.t.includes('<br>') ? 40 : 38}px;color:#fff;line-height:1.25">${c.t}</span>`, c.id || null, `background:${c.hb};border:1px solid #333`);
+    let y = Y + HH;
+    c.items.forEach(([t, id, plain, ih]) => {
+      const hh = ih || c.ih, st = `left:${x}px;top:${y}px;width:${CW}px;height:${hh}px;background:${c.ib};${c.fs ? `font-size:${c.fs}px;` : ''}`;
+      h += plain ? `<div class="cc" style="${st}">${t}</div>` : `<a class="cc" href="#/${id}" style="${st}">${t}</a>`;
+      y += hh;
+    });
+  });
+  h += `<a class="cc" href="#/situacoes-monitoradas-cor" style="left:7px;top:680px;width:${CW}px;height:38px;background:#215967;color:#fff;font-size:15px;border:none">SITUAÇÕES MONITORADAS - COR</a>`;
+  h += `<div class="abs" style="left:7px;top:765px;width:1821px;height:60px;background:#1F497D"></div>`;
+  h += box(7, 765, 960, 60, 'it b', '<span style="font-size:27px;color:#fff">FLUXO PARA EVENTO DE CHUVA E/OU DESASTRES TECNOLÓGICOS</span>', 'fluxo-chuva-desastres-tecnologicos', 'background:#1F497D');
+  h += box(967, 765, 861, 60, 'it b', '<span style="font-size:27px;color:#fff;font-weight:600">Eventos (DESASTRES) de grande escala - Lições Aprendidas</span>', 'licoes-aprendidas', 'background:#1F497D');
+  h += box(7, 835, 1821, 60, 'it b', '<span style="font-size:27px;color:#fff;font-weight:600">SIMULADO COR - Cardeman</span>', 'simulado-cor-cardeman', 'background:#632523');
+  return stage(W, H, h);
+}
+
+/* =========================================================================
+   COBRADE (imagem estática + acessos)
+   ========================================================================= */
+const EMDAT = [
+  ['Geophysical', '#A64B2A', 'Earthquake<br>Mass Movement (dry)<br>Volcanic activity', 'M8 38 L22 16 L30 28 L35 22 L44 38 Z'],
+  ['Hydrological', '#3456A3', 'Flood<br>Landslide<br>Wave action', 'M25 8 C33 20 38 26 38 32 A13 13 0 0 1 12 32 C12 26 17 20 25 8 Z'],
+  ['Meteorological', '#5A56A2', 'Storm<br>Extreme temperature<br>Fog', 'M8 18 H34 A5 5 0 1 0 29 13 M8 26 H40 A5 5 0 1 1 35 31 M8 34 H28'],
+  ['Climatological', '#EE8A1F', 'Drought<br>Glacial lake outburst<br>Wildfire', 'M25 14 A11 11 0 1 1 24.9 14 Z M25 4 V9 M25 41 V46 M4 25 H9 M41 25 H46'],
+  ['Biological', '#9CC43C', 'Animal accident<br>Epidemic<br>Insect infestation', 'M25 15 A10 10 0 1 1 24.9 15 Z M25 7 V15 M25 35 V43 M7 25 H15 M35 25 H43'],
+  ['Extra-terrestrial', '#7A3F97', 'Impact<br>Space weather', 'M30 30 A8 8 0 1 1 29.9 30 Z M10 10 L24 24 M16 8 L27 21 M8 16 L21 27'],
+];
+function renderCobrade() {
+  const W = 1630, H = 905;
+  let h = '';
+  [['SIMEO - figura', 'inicio', 5, 185], ['MATRIZ DE RISCO', 'matriz-risco', 300, 210], ['CONCEITOS DE DEFESA CIVIL - básico', 'conceitos-defesa-civil', 545, 275]]
+    .forEach(([t, id, x, w]) => h += box(x, 2, w, 36, 'light it b', `<span style="font-size:${id.startsWith('conc') ? 16 : 20}px;color:#0000FF">${t}</span>`, id));
+  h += box(0, 38, 822, 32, 'b', '<span style="font-size:22px;color:#fff;font-weight:600">COBRADE ORIGINAL (Instrução Normativa) - imagem estática</span>', null, 'background:#1F497D');
+  [['COBRADE - dinâmica - APENAS<br>DESASTRES NATURAIS', 'cobrade-dinamica-naturais', 822, 303], ['COBRADE - dinâmica - APENAS<br>DESASTES TECNOLÓGICOS', 'cobrade-dinamica-tecnologicos', 1127, 288], ['S2ID - grau de<br>intensidade do Desastre', 's2id-grau-intensidade', 1417, 211]]
+    .forEach(([t, id, x, w]) => h += box(x, 0, w, 70, 'pink light it b', `<span style="font-size:19px;line-height:1.3">${t}</span>`, id, 'border:1px solid #444'));
+  h += `<div class="slot" style="left:4px;top:80px;width:1396px;height:448px"><div>COBRADE ORIGINAL (Instrução Normativa) — painéis dos Desastres Naturais<br><small style="font-weight:400">imagem estática a inserir</small></div></div>`;
+  h += `<div class="slot" style="left:4px;top:538px;width:1102px;height:360px"><div>COBRADE ORIGINAL — painéis Naturais (Biológico) e Tecnológicos<br><small style="font-weight:400">imagem estática a inserir</small></div></div>`;
+  h += `<div class="abs" style="left:1128px;top:543px;width:287px;height:98px;background:#F2DCDB;flex-direction:column;gap:14px">
+     <a class="it" href="#/s2id-fide" style="color:#0000FF;font-size:15px;font-weight:600;text-decoration:none">para acessar S2ID &amp; FIDE (apenas<br>visualização) - clique aqui</a>
+     <a class="it" href="#/ics-teoria" style="color:#0000FF;font-size:15px;font-weight:600;text-decoration:none">para acessar o ICS (teoria) - clique aqui</a></div>`;
+  h += box(1114, 650, 372, 28, 'b', '<span style="font-size:19px;color:#fff">Disaster Classification System - EM-DAT</span>', null, 'background:#1F3B5F');
+  EMDAT.forEach(([n, c, sub, d], i) => {
+    h += `<div class="emd" style="left:${1114 + i * 62}px;top:682px;width:60px;height:156px;background:${c}">
+      <div class="ic"><svg width="40" height="40" viewBox="0 0 50 50"><path d="${d}" fill="${i == 2 || i > 2 ? 'none' : '#fff'}" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <b>${n}</b><span>${sub}</span></div>`;
+  });
+  h += `<div class="abs" style="left:1114px;top:842px;width:380px;height:16px;justify-content:flex-start;font-size:10.5px;color:#333">Natural Hazards Subgroups and Types in the IRDR Peril Classification and Hazard Glossary</div>`;
+  return stage(W, H, h);
+}
+
+/* =========================================================================
+   MATRIZ GUT — tela de links
+   ========================================================================= */
+function renderGutHub() {
+  let h = box(65, 0, 1596, 42, 'b', '<span style="font-size:30px;color:#fff">MATRIZES GUT ESPECÍFICAS PARA DIVERSAS SITUAÇÕES</span>', null, 'background:#1F497D');
+  GUT_LINKS.forEach(([t, id, c, fs], i) => h += box(65, 64 + i * 87, 1596, fs ? 70 : 66, 'light it b', `<span style="font-size:${fs || 32}px;color:${c}">${t}</span>`, id, 'background:#F2DCDB'));
+  return stage(1726, 850, h);
+}
+
+/* =========================================================================
+   MATRIZES GUT (interativas)
+   Clique numa célula para pontuar o item (1 a 10); clique no PESO para alternar 0-1-2-3.
+   VALOR FINAL = média ponderada das notas (itens com peso 0 não entram).
+   ========================================================================= */
+function renderGUT(sc) {
+  const g = sc.gut, id = sc.id, st = gutState(id);
+  const X0 = 402, CW = 132, XC = 1722, Y0 = 205, DH = 58;
+  const colBg = c => c < 4 ? '#C4D79B' : c < 7 ? '#FFC000' : c < 9 ? '#FF5050' : '#604A7B';
+  const colFg = c => c === 9 ? '#fff' : '#111';
+  const v = gutValor(st), fx = GUT_FAIXAS.find(f => v <= f[0]) || GUT_FAIXAS[3];
+  let h = tabs(g.tabs.map(t => [t[0], t[1], g.blueTabs || t[2]]), 0, 0, 1722, 30);
+  h += box(130, 45, 1592, 47, 'b', `<span style="font-size:${g.title.length > 70 ? 31 : 33}px;color:#fff">${g.title}</span>`, null, 'background:#1F497D');
+  h += box(0, 45, 130, 137, 'b', `<div style="color:#fff;line-height:1.3"><div style="font-size:21px">VALOR<br>FINAL</div><div style="font-size:29px;margin-top:12px">${fmt2(v)}</div></div>`, null, 'background:#000');
+  h += box(130, 112, 172, 68, 'b', '<span style="font-size:22px">ITEM</span>', null, 'background:#fff;border-top:2px solid #000');
+  h += box(302, 112, 100, 68, 'b', '<span style="font-size:22px">PESO</span>', null, 'background:#fff;border-top:2px solid #000');
+  [[0, 4, 'BAIXA (até 2 talvez nem entre no COMANDO)'], [4, 3, 'MÉDIA'], [7, 2, 'ALTA'], [9, 1, 'MUITO<br>ALTA']].forEach(([c, n, t]) =>
+    h += box(X0 + c * CW, 112, n * CW, 68, '', `<span style="font-size:${c === 9 ? 21 : 23}px;font-weight:600">${t}</span>`, null, `background:${colBg(c)};color:${colFg(c)};border-top:2px solid #000`));
+  h += box(XC, 92, 130, 30, 'b', '<span style="font-size:14px">CLASSIFICAÇÃO</span>', null, 'background:#D9D9D9');
+  h += box(XC, 122, 130, 58, 'b', `<span style="font-size:${fx[1].length > 6 ? 19 : 25}px;color:#fff">${fx[1]}</span>`, null, 'background:#000');
+  h += box(302, 180, 100, 25, '', '<span style="font-size:15px">1 ou 2 ou 3</span>', null, 'border:1px solid #555;border-bottom:2px solid #000');
+  for (let c = 0; c < 10; c++) h += box(X0 + c * CW, 180, CW, 25, '', `<span style="font-size:15px">${c + 1}</span>`, null, `background:${colBg(c)};color:${colFg(c)};border:1px solid #555;border-bottom:2px solid #000`);
+  h += box(XC, 180, 130, 25, '', '', null, 'background:#D9D9D9');
+  let y = Y0;
+  const groups = [['GRAVIDADE', 4], ['URGÊNCIA', 3], ['TENDÊNCIA', 3]];
+  let gi = 0, gy = Y0, gcount = 0;
+  g.rows.forEach(([label, cells, o = {}], r) => {
+    const hh = o.h || DH, fs = o.fs || g.fs || 15.5, w = st.w[r], sel = st.s[r];
+    h += box(130, y, 172, hh, 'b', `<span style="font-size:16px;line-height:1.35">${label}</span>`, null, 'background:#fff;border-bottom:1px solid #999');
+    h += `<div class="gc" title="Peso (clique para alterar: 0, 1, 2 ou 3)" onclick="gutPeso('${id}',${r})" style="left:302px;top:${y}px;width:100px;height:${hh}px;background:#D9D9D9;font-weight:700;font-size:17px">${w}</div>`;
+    cells.forEach((t, c) => {
+      const isSel = sel === c + 1;
+      h += `<div class="gc${isSel ? ' sel' : ''}${w ? '' : ' w0'}" title="Nota ${c + 1}" onclick="gutSet('${id}',${r},${c})" style="left:${X0 + c * CW}px;top:${y}px;width:${CW}px;height:${hh}px;background:${colBg(c)};color:${colFg(c)};font-size:${fs}px;${o.extra ? 'align-items:flex-start;padding-top:14px;' : ''}">${o.extra ? `<div>${t}<div style="margin-top:12px">E/OU</div></div>` : t}</div>`;
+    });
+    if (o.extra) o.extra.forEach(([a, b, t]) => h += `<div class="gc" onclick="gutSet('${id}',${r},${b})" style="left:${X0 + a * CW}px;top:${y + hh - 44}px;width:${(b - a + 1) * CW}px;height:44px;background:${colBg(a)};color:${colFg(a)};font-size:${fs}px">${t}</div>`);
+    h += box(XC, y, 130, hh, '', `<span style="font-size:19px;${w ? '' : 'color:#999;text-decoration:line-through'}">${sel || ''}</span>`, null, 'background:#D9D9D9');
+    y += hh; gcount++;
+    if (gcount === groups[gi][1]) { h += `<div class="gl" style="left:0;top:${gy}px;width:130px;height:${y - gy}px"><span>${groups[gi][0]}</span></div>`; gi++; gy = y; gcount = 0; }
+  });
+  h += `<div class="abs" style="left:0;top:${y}px;width:${XC}px;height:2px;background:#000"></div>`;
+  h += box(1590, y + 6, 132, 40, 'b', '<span style="font-size:20px">MÉDIA</span>', null, 'border-top:2px solid #000');
+  h += box(XC, y + 6, 130, 40, 'b', `<span style="font-size:20px">${fmt2(v)}</span>`, null, 'background:#D9D9D9');
+  h += box(0, y + 14, 1457, 62, '', `<div style="display:flex;width:100%;align-items:center;color:#fff">
+      <div style="flex:1;text-align:center"><div style="font-size:25px;font-weight:600">COMPLEXIDADE DA OPERAÇÃO (definida na Matriz de Complexidade)</div>
+      <div style="font-size:14.5px;font-weight:700;margin-top:4px">OBS: A definição da Complexidade da Operação é fundamental para identificar a Relevância da Ocorrência</div></div>
+      <div style="width:520px;text-align:center;font-size:33px;font-weight:600">MÉDIA COMPLEXIDADE</div></div>`, null, 'background:#4A452A');
+  h += `<a class="pl" href="#/escala-relevancia" style="left:0;top:${y + 84}px;width:533px;height:30px">para acessar a ESCALA DE RELEVÂNCIA - clique aqui</a>`;
+  h += `<a class="pl" href="#/matriz-complexidade" style="left:665px;top:${y + 84}px;width:528px;height:30px">para acessar a MATRIZ DE COMPLEXIDADE - clique aqui</a>`;
+  h += `<a class="pl" href="javascript:gutReset('${id}')" style="left:1590px;top:${y + 84}px;width:262px;height:30px;color:#632523;font-size:16px">↺ restaurar exemplo do Excel</a>`;
+  return stage(1860, y + 124, h);
+}
+
+/* =========================================================================
+   PROCEDIMENTO OPERACIONAL PADRÃO (POP) - COR — fluxograma + lista de incidentes
+   ========================================================================= */
+function renderPOP() {
+  const W = 1620, H = 800;
+  let h = tabs([['SIMEO', 'inicio', 1], ['MATRIZ DE RISCO', 'matriz-risco', 1], ['INCÊNDIO - entrada', 'incendio-entrada', 1], ['POPs - geral - COR', 'pops-geral-cor', 1]], 0, 0, 1548, 30);
+  h += box(31, 39, 1518, 38, 'b', '<span style="font-size:24px;color:#fff">PROCEDIMENTO OPERACIONAL PADRÃO (POP) - COR</span>', null, 'background:#1F497D');
+  const task = (x, y, t, w = 104, hh = 68) => `<rect x="${x}" y="${y}" width="${w}" height="${hh}" rx="9" fill="url(#tg)" stroke="#4A7EBB" stroke-width="2.5" filter="url(#sh)"/>
+    <text x="${x + w / 2}" y="${y + hh / 2 + 4 - (t.length - 1) * 8}" text-anchor="middle" font-size="12.5">${t.map((l, i) => `<tspan x="${x + w / 2}" dy="${i ? 16 : 0}">${l}</tspan>`).join('')}</text>`;
+  const gx = (x, y, plus) => `<polygon points="${x},${y - 22} ${x + 22},${y} ${x},${y + 22} ${x - 22},${y}" fill="#FFE97F" stroke="#C9A800" stroke-width="2"/>
+    ${plus ? `<path d="M${x - 10},${y} H${x + 10} M${x},${y - 10} V${y + 10}" stroke="#A88A00" stroke-width="5"/>` : `<path d="M${x - 8},${y - 8} L${x + 8},${y + 8} M${x + 8},${y - 8} L${x - 8},${y + 8}" stroke="#A88A00" stroke-width="5"/>`}`;
+  const tx = (x, y, t, a = 'middle') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="12.5">${t}</text>`;
+  const ln = d => `<path d="${d}" fill="none" stroke="#333" stroke-width="1.6" marker-end="url(#ar)"/>`;
+  h += `<svg class="layer" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="font-family:Arial,sans-serif;fill:#333">
+    <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCE8F7"/></linearGradient>
+      <filter id="sh" x="-10%" y="-10%" width="130%" height="140%"><feDropShadow dx="2" dy="3" stdDeviation="2" flood-opacity=".25"/></filter>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#333"/></marker></defs>
+    <rect x="18" y="84" width="1549" height="441" fill="#fff" stroke="#000" stroke-width="1.5"/>
+    <line x1="75" y1="84" x2="75" y2="525" stroke="#000" stroke-width="1.5"/><line x1="110" y1="84" x2="110" y2="525" stroke="#000" stroke-width="1.5"/>
+    <text transform="translate(41,305) rotate(-90)" text-anchor="middle" font-size="14.5" font-weight="700" fill="#000">PROCESSO DAS AÇÕES DA COORDENAÇÃO DO CENTRO DE</text>
+    <text transform="translate(60,305) rotate(-90)" text-anchor="middle" font-size="14.5" font-weight="700" fill="#000">OPERAÇÕES</text>
+    <text transform="translate(97,305) rotate(-90)" text-anchor="middle" font-size="12" font-weight="700" fill="#000">Operador da Sala de Controle - Coordenador</text>
+    <path d="M153,236 V148 H181" fill="none" stroke="#333" stroke-width="1.6" stroke-dasharray="2 5"/>
+    <rect x="183" y="110" width="115" height="76" fill="#EEE" stroke="#ccc" filter="url(#sh)"/>
+    ${tx(240, 128, 'Entradas:')}${tx(240, 144, 'ASCOM,')}${tx(240, 160, 'imprensa, Mídia')}${tx(240, 176, 'Social e outros')}
+    <circle cx="153" cy="255" r="17" fill="#D6EFB2" stroke="#7FBF3F" stroke-width="2.5"/><polygon points="153,245 162,252 158,263 148,263 144,252" fill="none" stroke="#7FBF3F" stroke-width="2"/>
+    ${tx(158, 293, 'Início -')}${tx(158, 309, 'incidente')}
+    ${ln('M170,255 H202')}${task(204, 221, ['Apurar', 'Ocorrência'])}${ln('M308,255 H346')}
+    ${gx(370, 255)}${tx(373, 216, 'Confirmado?')}${ln('M392,255 H446')}${tx(420, 248, 'Sim')}
+    ${ln('M370,277 V353')}${tx(387, 330, 'Não')}
+    <circle cx="370" cy="372" r="18" fill="#FBE1E1" stroke="#D21F1F" stroke-width="3"/><path d="M363,365 L377,379 M377,365 L363,379" stroke="#D21F1F" stroke-width="4"/>${tx(370, 413, 'Cancelado')}
+    ${task(448, 221, ['Cadastrar  no', 'SGO'])}${ln('M552,255 H586')}${task(588, 221, ['Acionar', 'Equipes'])}
+    ${task(588, 103, ['Realizar ação', 'complementar'])}${ln('M640,171 V219')}
+    ${ln('M692,255 H721')}${gx(745, 255, 1)}${ln('M767,255 H806')}${task(808, 221, ['Monitorar', 'ocorrência'])}
+    ${ln('M912,255 H991')}${gx(1015, 255)}${tx(966, 210, 'Desdobramento')}${tx(966, 226, 'de novas ações?')}
+    ${ln('M1015,233 V137 H695')}${tx(984, 126, 'Sim')}
+    ${ln('M1037,255 H1089')}${tx(1057, 243, 'Não')}${gx(1113, 255)}${tx(1113, 196, 'Finalizar')}${tx(1113, 212, 'ocorrência?')}
+    ${ln('M1113,277 V325 H860 V291')}${tx(1052, 320, 'Não, monitorar')}${tx(1040, 336, 'ocorrência')}
+    ${ln('M1135,255 H1169')}${tx(1152, 247, 'Sim')}${task(1171, 221, ['Acompanhar', 'encerramento', 'da operação'])}
+    ${ln('M1275,255 H1296')}${gx(1320, 255, 1)}${ln('M1342,255 H1359')}${task(1361, 221, ['Finalizar', 'ocorrência no', 'SGO'])}
+    ${ln('M1465,255 H1485')}<circle cx="1505" cy="255" r="17" fill="#FBE1E1" stroke="#D21F1F" stroke-width="4"/>${tx(1505, 284, 'Fim')}
+    ${ln('M745,277 V386')}
+    <rect x="695" y="388" width="104" height="68" rx="9" fill="url(#tg)" stroke="#4A7EBB" stroke-width="2.5" filter="url(#sh)"/>
+    <rect x="737" y="438" width="16" height="16" fill="#fff" stroke="#4A7EBB" stroke-width="1.5"/><path d="M740,446 H750 M745,441 V451" stroke="#4A7EBB" stroke-width="2"/>
+    ${tx(747, 482, 'Iniciar processo associado')}${ln('M799,422 H1320 V279')}
+  </svg>`;
+  h += box(31, 537, 590, 28, 'b', '<span style="font-size:18px;color:#fff;font-weight:600">LISTA DE INCIDENTES</span>', null, 'background:#1F497D');
+  h += box(649, 537, 281, 28, 'b', '<span style="font-size:14px;color:#fff">OS ARQUIVOS ESTÃO NO LINK EXTERNO:</span>', null, 'background:#632523');
+  h += `<a class="abs it" href="${POP_LINK}" target="_blank" rel="noopener" style="left:933px;top:537px;width:640px;height:28px;justify-content:flex-start;color:#0000FF;font-size:15px;text-decoration:underline;white-space:nowrap;overflow:hidden">${POP_LINK}</a>`;
+  const XS = [31, 341, 650, 959, 1268];
+  INCIDENTES.forEach((col, i) => col.forEach((t, j) => {
+    const st = `left:${XS[i]}px;top:${575 + j * 23}px;width:${i === 0 && j === 7 ? 305 : 281}px;height:23px;${j === 0 ? 'border-top:1px solid #000;' : ''}${i === 1 && j === 3 ? 'font-size:13.5px;' : ''}`;
+    h += t[0] === '*' ? `<a class="inc" href="#/pop-${slug(t.slice(1))}" style="${st}">${t.slice(1)}</a>` : `<div class="inc" style="${st}">${t}</div>`;
+  }));
+  return stage(W, H, h);
+}
+
+/* =========================================================================
+   OCORRÊNCIA DE ACIDENTE PETROQUÍMICO
+   ========================================================================= */
+function renderPetro() {
+  const W = 1880, H = 918;
+  let h = box(10, 2, 82, 28, 'it b', '<span style="font-size:20px;color:#fff">ICS</span>', 'ics-teoria', 'background:#000');
+  h += tabs([['SIMEO - figura', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['CCO - atuações', 'cco'], ['MATRIZ ICR-S2ID', 'matriz-icr-s2id'], ['POPs', 'pops']], 105, 2, 1057, 28);
+  h += box(1180, 2, 684, 28, 'it b', '<span style="font-size:15.5px;color:#fff">AÇÕES DE GESTÃO DO RISCO (PREVENÇÃO / PREPARAÇÃO / MITIGAÇÃO)</span>', 'acoes-gestao-risco', 'background:#1F497D');
+  h += box(10, 40, 1854, 68, 'b', '<span style="font-size:50px;color:#fff;letter-spacing:.3px">OCORRÊNCIA DE ACIDENTE PETROQUÍMICO</span>', null, 'background:#FF0000');
+  // coluna esquerda
+  h += box(10, 118, 546, 83, 'b', '<span style="font-size:23px;color:#fff;line-height:1.5">A VALIDAÇÃO É O PRIMEIRO PASSO<br>APÓS A ENTRADA DA OCORRÊNCIA</span>', null, 'background:#4A452A;border:2px solid #000');
+  h += box(10, 201, 546, 157, '', '<span style="font-size:19.5px;line-height:1.5;padding:0 6px">Pode ser feita por algum representante de instituição no COR (após contato com sua equipe de campo) e/ou através de câmera de monitoramento ou outros sensores, ou ainda por imagens ou informações confirmadas da mídia.</span>', null, 'border:2px solid #000;border-top:none');
+  const fb = (x, y, w, hh, t, bg) => box(x, y, w, hh, 'b', `<span style="font-size:18px;color:#fff;line-height:1.4">${t}</span>`, null, `background:${bg}`);
+  h += fb(163, 375, 207, 55, 'ENTRADA DA<br>OCORRÊNCIA', '#1F497D') + fb(163, 535, 207, 55, 'VALIDAR', '#632523') + fb(168, 706, 206, 55, 'OCORRÊNCIA<br>CONFIRMADA', '#1F497D');
+  h += fb(32, 836, 127, 55, 'REGISTRAR', '#632523') + fb(210, 838, 128, 55, 'CLASSIFICAR', '#632523') + fb(391, 838, 155, 55, 'ATIVAR PLANO<br>DE AÇÃO', '#632523');
+  h += box(67, 655, 174, 33, 'b', '<span style="font-size:18px;color:#fff">TEM HAZID?</span>', null, 'background:#FF0000');
+  const note = (x, y, t) => box(x, y, 175, 42, 'b', `<span style="font-size:9.5px;line-height:1.35">${t}</span>`);
+  h += note(275, 457, 'INFORMAÇÃO RECEBIDA VIA<br>REDES SOCIAIS OU 193 / 199<br>OU OUTROS MEIOS') + note(290, 624, 'VERIFICAR COM EQUIPE DE CAMPO<br>E/OU CÂMERA DE MONITORAMENTO<br>A VERACIDADE DA OCORRÊNCIA');
+  // coluna direita
+  h += box(570, 118, 1294, 84, 'b', '<span style="font-size:30px;color:#fff">AÇÕES A SEREM EXECUTADAS IMEDIATAMENTE APÓS A VALIDAÇÃO DA OCORRÊNCIA</span>', null, 'background:#4A452A');
+  const desc = (y, hh, t, fs) => box(1180, y, 684, hh, '', `<span style="font-size:${fs}px;line-height:1.45;padding:0 6px">${t}</span>`, null, 'border:1px solid #000');
+  const act = (y, hh, t, fs, link) => link
+    ? `<a class="abs btn light" href="#/${link}" style="left:570px;top:${y}px;width:593px;height:${hh}px;border:2px solid #000;flex-direction:column;text-decoration:none;color:#111"><span class="b" style="font-size:${fs}px;line-height:1.4">${t}</span><span class="it b" style="font-size:15px;color:#0000CC;text-decoration:underline;margin-top:2px">clique aqui</span></a>`
+    : box(570, y, 593, hh, 'b', `<span style="font-size:${fs}px">${t}</span>`, null, 'border:2px solid #000');
+  h += box(570, 210, 593, 68, 'it b', '<span style="font-size:26px;color:#fff">ATIVAR O HAZID ESPECÍFICO</span>', 'hazid-petroquimico', 'background:#632523;border:2px solid #000');
+  h += desc(210, 68, 'O Coordenador e/ou Subchefe de Operações (ou mesmo o CEO - em função da gravidade) verifica o HAZID (planejamento realizado) sobre o evento.', 18);
+  h += act(291, 87, '<u>REGISTRAR NO SISTEMA (COMANDO / SISCOR)</u>', 26) + desc(291, 87, 'O Assessor do Coordenador executa o REGISTRO da ocorrência no Sistema.<br>O Coordenador e/ou Subchefe de Operações podem Acompanhar o Registro', 18);
+  h += act(391, 87, '<u>CLASSIFICAR</u> NA MATRIZ GUT ESPECÍFICA', 26, 'gut-incendio') + desc(391, 87, 'O Coordenador executa o CLASSIFICAÇÃO da ocorrência na Matriz GUT Específica da ocorrência.<br>O Subchefe também pode executar e/ou acompanhar isso.', 18);
+  h += act(491, 92, '<u>ATIVAR</u> A MATRIZ DE ATIVIDADES x<br>RESPONSABILIDADES ESPECÍFICA', 26, 'axr-petroquimico') + desc(491, 92, 'O Assessor do Coordenador faz a ATIVAÇÃO da Matriz AxR específica, visando a execução das tarefas definidas no documento pelo Coordenador e/ou Subchefe de Operações (o documento pode ser mostrado no Vídeo Wall).', 18);
+  h += box(570, 596, 1294, 72, 'b', '<div style="line-height:1.35"><div style="font-size:28px">DEMAIS AÇÕES POSTERIORES</div><div class="it" style="font-size:23px;font-weight:600">(preferencialmente sendo alimentadas automaticamente)</div></div>', null, 'background:#DDD9C4');
+  h += act(681, 55, '<u>ATIVAR</u> A MATRIZ DE COMUNICAÇÃO', 22, 'matriz-comunicacao') + desc(681, 55, 'O Assessor do Coordenador faz a ATIVAÇÃO da Matriz de Comunicação e encaminha diretamente para o representante da ASCOM (se possível o coordenador) para execução das tarefas definidas no documento.', 13.5);
+  h += act(749, 55, '<u>ATIVAR</u> A MATRIZ DECISÓRIA', 22, 'matriz-decisoria') + desc(749, 55, 'O Assessor do Coordenador faz a ATIVAÇÃO da Matriz Decisória, visando a verificação, pelo Coordenador e/ou Subchefe de Operações, se convém a Mudança de Estágio da Cidade.', 17);
+  h += act(817, 55, '<u>ATIVAR</u> A MATRIZ ICR-S2ID ESPECÍFICA', 22, 'matriz-icr-s2id') + desc(817, 55, 'O Assessor do Coordenador faz a ATIVAÇÃO da Matriz ICR-S2ID específica, visando a Classificação do Impacto (MÉDIO, ALTO ou MUITO ALTO) da ocorrência. Esta é uma classificação posteior a da Matriz GUT e tem mais foco no histórico do que na operação propriamente dita.', 12);
+  h += box(570, 882, 1294, 32, 'light it b', '<span style="font-size:21px;color:#0000FF">PARA ACESSAR O FLUXOGRAMA DE ATIVAÇÃO DAS MATRIZES - clique aqui</span>', 'fluxograma-ativacao-matrizes', 'background:#F2DCDB');
+  // setas (fluxo à esquerda + ciclo dourado)
+  h += `<svg class="layer" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
+    <defs><marker id="ga" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4F6228"/></marker>
+      <marker id="go" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="2.6" markerHeight="2.6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#FFC000" stroke="#7F6000" stroke-width="1"/></marker></defs>
+    <g stroke="#4F6228" stroke-width="3" fill="none" marker-end="url(#ga)">
+      <path d="M267,433 V528"/><path d="M268,593 V700"/><path d="M165,768 L118,828"/><path d="M270,764 V832"/><path d="M380,762 L428,830"/></g>
+    <g fill="none" stroke-linecap="round">
+      <path d="M668,840 C585,828 585,768 668,762" stroke="#7F6000" stroke-width="17"/><path d="M668,840 C585,828 585,768 668,762" stroke="#FFC000" stroke-width="12" marker-end="url(#go)"/>
+      <path d="M1068,762 C1150,768 1150,828 1068,838" stroke="#7F6000" stroke-width="17"/><path d="M1068,762 C1150,768 1150,828 1068,838" stroke="#FFC000" stroke-width="12" marker-end="url(#go)"/></g>
+  </svg>`;
+  return stage(W, H, h);
+}
+
+/* =========================================================================
+   EVENTOS DE GRANDE PORTE (repercussão internacional)
+   ========================================================================= */
+function renderGrandes() {
+  const W = 1840, X = [8, 133, 269, 751, 1357, 1775];
+  let h = tabs([['SIMEO - figura', 'inicio', 1], ['MATRIZ DE RISCO', 'matriz-risco', 1], ['AÇÕES PLANEJADAS (Eventos, Simulados, Implosões etc)', 'acoes-planejadas', 1], ['EVENTOS NA CIDADE', 'planilha-planejamento-eventos', 1]], 5, 2, 1770, 24);
+  h += box(8, 35, 1767, 53, 'b', '<span style="font-size:30px;color:#fff">EVENTOS DE GRANDE PORTE (REPERCUSSÃO INTERNACIONAL) QUE MARCARAM A CIDADE NAS ÚLTIMAS 4 DÉCADAS</span>', null, 'background:#1F497D');
+  const cell = (c, y, hh, t, st = '', span = 1) => box(X[c], y, X[c + span] - X[c], hh, '', t, null, 'border:1px solid #444;' + st);
+  ['ANO', 'PERÍODO', 'NOME DO EVENTO', 'BREVE RESUMO', '<i>TIPO</i>'].forEach((t, c) => h += cell(c, 88, 42, `<span style="font-size:22px;font-weight:600">${t}</span>`, 'background:#D9D9D9'));
+  let y = 130, ty = 0;
+  GRANDES.forEach(([a, p, n, r, t, hh]) => {
+    h += cell(0, y, hh, `<span style="font-size:18px">${a}</span>`) + cell(1, y, hh, `<span style="font-size:${p.length > 18 ? 13.5 : 16}px">${p}</span>`);
+    h += cell(2, y, hh, `<span style="font-size:18px;font-weight:700">${n}</span>`, 'justify-content:flex-start;padding-left:4px');
+    if (r) h += `<div class="abs" title="${esc(r.replace(/<[^>]+>/g, ''))}" style="left:751px;top:${y}px;width:606px;height:${hh}px;border:1px solid #444;align-items:flex-start;justify-content:flex-start;text-align:left;overflow:hidden;font-size:12.5px;line-height:1.12;padding:1px 3px">${r}</div>`;
+    else if (!ty) ty = y;
+    h += cell(4, y, hh, `<span style="font-size:18px;font-weight:700">${t}</span>`);
+    y += hh;
+  });
+  // linha do tempo
+  const tl = LINHA_TEMPO.map(([yr, ev], i) => {
+    const x = 20 + i * 58, up = i % 2 === 0, items = ev.split('|');
+    return `<line x1="${x}" y1="${up ? 132 : 158}" x2="${x}" y2="${up ? 132 - items.length * 12 - 22 : 158 + items.length * 12 + 26}" stroke="#bbb"/>
+      <circle cx="${x}" cy="145" r="6" fill="#1BA1E2"/>
+      <text x="${x + 5}" y="${up ? 129 : 175}" font-size="17" font-weight="700" fill="#222">${yr}</text>
+      ${items.map((e, k) => `<text x="${x + 5}" y="${up ? 112 - (items.length - 1 - k) * 12 : 189 + k * 12}" font-size="9.5" fill="#777">${e}</text>`).join('')}`;
+  }).join('');
+  h += `<div class="abs" style="left:751px;top:${ty}px;width:606px;height:252px;border:1px solid #444;background:#fff"></div>
+    <svg class="layer" style="left:754px;top:${ty + 2}px" width="600" height="248" viewBox="0 0 600 248">
+      <text x="6" y="36" font-size="35" font-weight="800" fill="#1F3B5F" font-family="Arial Narrow,Arial,sans-serif">LINHA DO TEMPO</text>
+      <text x="324" y="32" font-size="14.5" font-weight="700" fill="#FF0000" text-decoration="underline">A PARTIR DA IMPLANTAÇÃO DO COR</text>
+      <line x1="10" y1="145" x2="560" y2="145" stroke="#9aa" stroke-width="4"/>${tl}</svg>`;
+  h += cell(0, y, 42, '<span style="font-size:21px;font-weight:600">GRANDES SHOWS NA PRAIA DE COPACABANA</span>', 'background:#D9D9D9', 3);
+  h += cell(3, y, 42, '<span style="font-size:21px;font-weight:600">GRANDES EVENTOS DE ROTINA NA CIDADE (anuais ou bianuais - por exemplo)</span>', 'background:#D9D9D9', 2);
+  y += 42;
+  [['2006', '18/02/2006', 'Rolling Stones', 'REVEILLON EM COPACABANA', 'ROCK IN RIO'], ['2024', '04/05/2024', '<b>SHOW DA MADONNA</b>', 'CARNAVAL NO SAMBÓDROMO', 'IRON MAN RIO 70.3'], ['2025', '03/05/2025', '<b>SHOW DA LADY GAGA</b>']].forEach(([a, d, n, e1, e2]) => {
+    h += cell(0, y, 42, `<span style="font-size:18px">${a}</span>`) + cell(1, y, 42, `<span style="font-size:16px">${d}</span>`) + cell(2, y, 42, `<span style="font-size:19px">${n}</span>`, 'justify-content:flex-start;padding-left:4px');
+    h += e1 ? cell(3, y, 42, `<span style="font-size:18px;font-weight:600">${e1}</span>`) + cell(4, y, 42, `<span style="font-size:18px;font-weight:600">${e2}</span>`)
+      : box(751, y, 1024, 42, 'light it b', '<span style="font-size:21px">PARA LISTA GERAL - clique aqui</span>', 'lista-geral-eventos-rotina', 'background:#F2DCDB;border:1px solid #444');
+    y += 42;
+  });
+  h += box(1778, 88, 47, y - 88, 'pink light it b', '<span class="vt" style="font-size:15px">PARA ACESSAR O PROTOCOLO DE INCIDENTES EM EVENTOS - clique aqui</span>', 'protocolo-de-incidentes-em-eventos');
+  return stage(W, y + 10, h);
+}
+
+/* =========================================================================
+   HISTÓRICO DE IMPLOSÕES
+   ========================================================================= */
+function renderImplosoes() {
+  const W = 1600, X = [12, 112, 484, 679, 1336, 1464, 1590];
+  let h = tabs([['SIMEO - figura', 'inicio'], ['MATRIZ DE RISCO', 'matriz-risco'], ['MATRIZ AxR - implosões', 'matriz-axr-implosoes'], ['IMPLOSÃO - exemplo de planejamento', 'implosao-exemplo-planejamento'], ['HISTÓRICO DE AÇÕES PLANEJADAS', 'acoes-planejadas']], 5, 2, 1585, 26);
+  const cell = (c, y, hh, t, st = '', span = 1) => box(X[c], y, X[c + span] - X[c], hh, '', t, null, 'border:1px solid #444;' + st);
+  ['DATA', 'DESCRIÇÃO', 'BAIRRO', '<i>OUTRAS INFORMAÇÕES</i>', '<i>LAT</i>', 'LONG'].forEach((t, c) => h += cell(c, 45, 53, `<span style="font-size:22px;font-weight:600;color:#fff">${t}</span>`, 'background:#1F497D;border-color:#000'));
+  let y = 98;
+  IMPLOSOES.forEach(r => {
+    if (!r) { h += cell(0, y, 41, '<span style="font-size:15px;font-weight:700;padding-left:50px">VERIFICAR SE HOUVE IMPLOSÕES ENTRE 2018 e 2023</span>', 'background:#FFFF00;justify-content:flex-start', 4) + cell(4, y, 41, '') + cell(5, y, 41, ''); y += 41; return; }
+    const [d, n, b, o, la, lo] = r;
+    h += cell(0, y, 41, `<span style="font-size:14.5px;font-weight:700">${d}</span>`);
+    if (n[0] === '*') { const [t, c, id] = n.slice(1).split('|'); h += box(X[1], y, X[2] - X[1], 41, 'light it b', `<span style="font-size:${t.length > 30 ? 15 : 17}px;color:${c}">${t}</span>`, id, 'border:1px solid #444'); }
+    else h += cell(1, y, 41, `<span style="font-size:14.5px;font-weight:700">${n}</span>`);
+    h += cell(2, y, 41, `<span style="font-size:13px">${b}</span>`);
+    h += `<div class="abs" title="${esc(o)}" style="left:679px;top:${y}px;width:657px;height:41px;border:1px solid #444;justify-content:flex-start;text-align:left;overflow:hidden;font-size:11.5px;line-height:1.15;padding:0 3px">${o}</div>`;
+    h += cell(4, y, 41, `<span style="font-size:13px">${la}</span>`) + cell(5, y, 41, `<span style="font-size:13px">${lo}</span>`);
+    y += 41;
+  });
+  return stage(W, y + 10, h);
+}
+
+/* =========================================================================
+   EVENTOS TÉCNICO-CIENTÍFICOS DE RRD (participação da Defesa Civil Municipal)
+   ========================================================================= */
+function renderRRD() {
+  const W = 1090, X = [8, 125, 606, 779, 1080], RH = 21.6;
+  let h = `<div class="abs" style="left:5px;top:2px;width:1075px;height:26px;background:#F2DCDB;justify-content:space-around">
+    <a class="tab blue" style="font-size:15px" href="#/inicio">SIMEO - figura</a><a class="tab" style="font-size:15px" href="#/matriz-risco">MATRIZ DE RISCO</a>
+    <a class="tab blue" style="font-size:15px" href="#/gestao-de-risco">GESTÃO DE RISCO</a><a class="tab blue" style="font-size:15px" href="#/mapeamento-de-riscos">MAPEAMENTO DE RISCOS</a></div>`;
+  h += box(8, 36, 1072, 72, 'b', '<span style="font-size:26.5px;color:#fff;line-height:1.3">RELAÇÃO DOS EVENTOS TÉCNICO-CIENTÍFICOS DE <u>NÍVEL NACIONAL E/OU INTERNACIONAL</u> EM QUE HOUVE PARTICIPAÇÃO DE REPRESENTANTE(S) DA DEFESA CIVIL MUNICIPAL DO RIO</span>', null, 'background:#1F497D;border:2px solid #17375E');
+  h += box(8, 110, 1072, 20, 'it b', '<span style="font-size:13px">OBS: dos eventos realizados na própria cidade do Rio de Janeiro, foram relacionados apenas os considerados mais significativos</span>');
+  const cell = (c, y, t, st = '') => `<div class="abs" style="left:${X[c]}px;top:${y}px;width:${X[c + 1] - X[c]}px;height:${RH}px;border:1px solid #888;font-size:13.5px;overflow:hidden;white-space:nowrap;${st}">${t}</div>`;
+  ['DATA', 'DESCRIÇÃO DO EVENTO (resumida)', 'LOCAL', 'PALESTRANTE/REPRESENTANTES DA SUBPDEC'].forEach((t, c) => h += cell(c, 138, t, 'background:#D9D9D9;font-weight:700;' + (c === 3 ? 'justify-content:flex-start;padding-left:3px' : '')));
+  RRD.forEach(([d, e, l, p, y1], i) => {
+    const y = 138 + RH * (i + 1), bg = y1 ? 'background:#FFFF99;' : '';
+    h += cell(0, y, d, bg + 'font-weight:600');
+    h += e[0] === '*'
+      ? `<a class="abs btn light it" href="#/rrd-${slug(e.slice(1)).slice(0, 40)}" style="left:${X[1]}px;top:${y}px;width:${X[2] - X[1]}px;height:${RH}px;border:1px solid #888;font-size:13.5px;overflow:hidden;white-space:nowrap;justify-content:flex-start;padding-left:3px;color:#FF0000;text-decoration:none">${e.slice(1)}</a>`
+      : cell(1, y, e, bg + 'justify-content:flex-start;padding-left:3px;font-weight:600');
+    h += cell(2, y, l, bg) + cell(3, y, p, bg + 'justify-content:flex-start;padding-left:3px');
+  });
+  return stage(W, 138 + RH * (RRD.length + 1) + 12, h, true);
+}
+
+/* =========================================================================
+   HISTÓRICO DE RESSACAS MARÍTIMAS COM DANOS NA CIDADE
+   ========================================================================= */
+const RESSACAS = [
+  ['08/04/2026', 'Costão do Leme atingido', 'ZONA SUL', 'https://g1.globo.com/rj/rio-de-janeiro/noticia/2026/04/09/ressaca-arrasta-mulher-que-estava-na-mureta-do-leme.ghtml'],
+  ['29/07/2025', 'Avenida da Orla é atingida por ondas', 'ZONA SUL', 'https://g1.globo.com/rj/rio-de-janeiro/noticia/2025/07/30/rio-tem-mais-um-dia-de-aviso-de-ressaca-nesta-quarta-com-pico-de-mare-na-madrugada.ghtml'],
+  ['13/08/2024', 'Mirante do Leme e calçadão do Leblon são atingidos por ondas<br>(idoso se afogou e foi à óbito)', 'ZONA SUL', 'https://www.band.uol.com.br/noticias/bora-brasil/ultimas/idoso-e-arrastado-por-onda-em-ressaca-e-morre-afogado-na-praia-do-leme-no-rj-202408140925'],
+  ['01/07/2024', 'Avenida da Orla é atingida por ondas', 'ZONA SUL', 'https://cbn.globo.com/rio-de-janeiro/noticia/2024/07/01/ressaca-atinge-orla-do-rio-e-ondas-invadem-calcadao-da-praia-do-leblon-veja-video.ghtml'],
+  ['05/11/2023', 'pistas de Ipanema e Leblon tomadas por ondas e areia<br>(OBS: adolescente desaparecido)', 'ZONA SUL', 'https://g1.globo.com/rj/rio-de-janeiro/noticia/2023/11/05/bombeiros-fazem-buscas-por-adolescente-que-se-afogou-e-desapareceu-em-ipanema.ghtml'],
+  ['18/09/2020', 'Quioque na Barra destruído', 'BARRA', 'https://www.youtube.com/watch?v=Q72SPhuPCrQ'],
+  ['04/08/2019', '*Barra - heliponto Gmar, ciclovia e outros (várias semanas)|ressaca-barra-2019', 'BARRA', 'https://g1.globo.com/rj/rio-de-janeiro/noticia/2019/08/05/alerta-de-ressaca-termina-nesta-segunda-ondas-derrubam-ate-heliponto.ghtml'],
+  ['06/07/2019', 'quiosques impactados e areia na pista no Leblon', 'LEBLON', 'https://odia.ig.com.br/rio-de-janeiro/2019/07/5661173-ressaca-causa-estragos-em-quiosque-e-interdita-pista-no-leblon.html#foto=1'],
+  ['15/09/2017', 'destruição do calçadão - Praia da Macumba', 'RECREIO', 'https://g1.globo.com/rio-de-janeiro/noticia/calcadao-da-praia-da-macumba-afunda-e-desmorona-no-rio.ghtml'],
+  ['28/10/2016', 'quebra deck e danifica quiosques', 'LEBLON', 'http://g1.globo.com/rio-de-janeiro/noticia/2016/10/rua-no-leblon-fecha-em-sabado-de-ressaca-no-rio-e-e-tomada-pelo-mar.html'],
+  ['30/07/2016', 'atingiu o Centro de Transmissão dos Jogos Rio 2016', 'COPACABANA', 'https://noticias.uol.com.br/ultimas-noticias/agencia-estado/2016/07/30/centro-de-transmissao-na-praia-de-copacabana-e-ameacado-pelas-ondas.htm'],
+  ['21/04/2016', '*Queda da ciclovia|queda-ciclovia-2016', 'NIEMEYER', 'https://pt.wikipedia.org/wiki/Ciclovia_Tim_Maia'],
+  ['12/12/2011', 'quiosques inundados', '', 'http://noticias.r7.com/rio-de-janeiro/noticias/mar-agitado-causa-estragos-em-quiosques-e-calcadoes-no-rio-e-niteroi-20091206.html'],
+  ['DIVERSOS', 'imagens e histórico geral de ressacas', '', 'http://fotografia.folha.uol.com.br/galerias/3053-ressaca-no-rj#foto-60077 / https://rioquemoranomar.blogspot.com.br/2016/05/rio-as-ressacas-de-maio.html'],
+];
+[['matriz-axr-ressacas', 'Matriz AxR - Ressacas'], ['protocolo-ressacas', 'Protocolo de atuação nas Ressacas do Mar'], ['planejamento-interdicao-ciclovia', 'Planejamento de interdição da Ciclovia'],
+ ['ressaca-barra-2019', 'Ressaca 2019 — Barra (heliponto Gmar, ciclovia e outros)'], ['queda-ciclovia-2016', 'Queda da ciclovia (21/04/2016)']].forEach(([id, t]) => reg(id, t, 'Eventos Não Planejados'));
+Object.assign(SCREENS['hist-ressacas'], { ready: true, render: renderRessacas, title: 'Histórico de Ressacas Marítimas com danos na cidade' });
+
+const urlLinks = s => s.split(' / ').map(u => `<a href="${u}" target="_blank" rel="noopener" style="color:#111;text-decoration:none" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">${u}</a>`).join(' / ');
+function renderRessacas() {
+  const W = 1280, X = [6, 107, 478, 641, 1270], RH = 53.5;
+  let h = `<div class="abs" style="left:0;top:2px;width:1270px;height:19px;background:#F2DCDB;justify-content:space-around">
+    <a class="tab blue" style="font-size:13.5px;border:1px solid #333;background:#F2DCDB" href="#/inicio">SIMEO - figura</a><a class="tab" style="font-size:13.5px" href="#/matriz-risco">MATRIZ DE RISCO</a>
+    <a class="tab" style="font-size:13.5px" href="#/matriz-axr-ressacas">MATRIZ AxR - RESSACAS</a><a class="tab blue" style="font-size:13.5px" href="#/eventos-nao-planejados">HISTÓRICO DE EVENTOS NÃO PLANEJADOS (Acidentes, Incidentes e Desastres)</a></div>`;
+  h += `<div class="abs" style="left:6px;top:24px;width:1264px;height:28px;background:#F2DCDB;justify-content:space-around">
+    <a class="tab blue" style="font-size:15px" href="#/protocolo-ressacas">PARA VER PROTOCOLO DE ATUAÇÃO NAS RESSACAS DO MAR - clique aqui</a>
+    <a class="tab blue" style="font-size:15px" href="#/planejamento-interdicao-ciclovia">PARA VER O PLANEJAMENTO DE INTERDIÇÃO DA CICLOVIA - clique aqui</a></div>`;
+  h += box(6, 60, 1264, 43, 'b', '<span style="font-size:32px;color:#fff">HISTÓRICO DE RESSACAS MARÍTIMAS COM DANOS NA CIDADE</span>', null, 'background:#1F497D;border:2px solid #000');
+  const cell = (c, y, hh, t, st = '') => box(X[c], y, X[c + 1] - X[c], hh, '', t, null, 'border:1px solid #444;' + st);
+  ['DATA', 'DESCRIÇÃO', 'REGIÃO', '<i>OUTRAS INFORMAÇÕES</i>'].forEach((t, c) => h += cell(c, 110, 55, `<span style="font-size:19px;font-weight:700">${t}</span>`, 'background:#D9D9D9'));
+  let y = 165;
+  RESSACAS.forEach(([d, ds, r, u]) => {
+    const hh = RH - (+d.slice(6) < 2018 || d === 'DIVERSOS' ? 6 : 0);
+    h += cell(0, y, hh, `<span style="font-size:13.5px">${d}</span>`);
+    if (ds[0] === '*') { const [t, id] = ds.slice(1).split('|'); h += box(X[1], y, X[2] - X[1], hh, 'light it b', `<span style="font-size:13.5px;color:#0000FF">${t}</span>`, id, 'border:1px solid #444'); }
+    else h += cell(1, y, hh, `<span style="font-size:13.5px;line-height:1.35">${ds}</span>`);
+    h += cell(2, y, hh, `<span style="font-size:13px;font-weight:600">${r}</span>`);
+    const fs = u.length > 130 ? 9 : u.length > 105 ? 10 : u.length > 80 ? 11.5 : 12.5;
+    h += `<div class="abs" style="left:641px;top:${y}px;width:629px;height:${hh}px;border:1px solid #444;font-family:Arial,sans-serif;font-size:${fs}px;line-height:1.35;word-break:break-all;padding:0 6px">${urlLinks(u)}</div>`;
+    y += hh;
+  });
+  return stage(W, y + 8, h);
+}
+
+/* =========================================================================
+   OCORRÊNCIAS GRAVES EM EVENTOS DE GRANDE PORTE
+   ========================================================================= */
+const OC_EVENTOS = [
+  ['10/03/2024', 'Jovem sofre descarga elétrica em evento (Wanna Be Tour) no RIOCENTRO'],
+  ['21/11/2023', 'Confusão no jogo Brasil e Argentina no Maracanã'],
+  ['17/11/2023', 'Jovem vai a óbito em show no Engenhão em 2023 (Onda de Calor)'],
+  ['26/08/2023', 'Furtos em massa em Show do Alok em Copacabana'],
+  ['21/04/2022', 'Menina vai a óbito em acidente no Sambódromo (Carro Alegórico)'],
+  ['26/02/2017', 'Acidente com carro alegórico deixa 20 feridos (Desfile na Sapucaí)'],
+  ['28/07/2013', 'evento alterado na JMJ devido à chuva e alagamento (mudança de Guaratiba - Campus Fidei para Copacabana)'],
+  ['2007', 'final do beisebal do Pan 2007 cancelado devido à chuva e alagamento'],
+];
+Object.assign(SCREENS['hist-eventos-grande-porte'], { ready: true, render: renderOcEventos, title: 'Ocorrências graves em eventos de grande porte' });
+function renderOcEventos() {
+  let h = tabs([['SIMEO - figura', 'inicio', 1], ['MATRIZ DE RISCO', 'matriz-risco', 1], ['PROTOCOLO DE INCIDENTES EM EVENTOS', 'protocolo-de-incidentes-em-eventos', 1]], 0, 0, 1300, 24);
+  h += box(6, 56, 196, 45, 'b', '<span style="font-size:17px;color:#fff">ANO</span>', null, 'background:#366092;border:1px solid #000');
+  h += box(202, 56, 1094, 45, 'b', '<span style="font-size:17px;color:#fff">RELAÇÃO DOS EVENTOS IDENTIFICADOS</span>', null, 'background:#366092;border:1px solid #000');
+  OC_EVENTOS.forEach(([d, t], i) => {
+    const y = 101 + i * 67;
+    h += box(6, y, 196, 67, '', `<span style="font-size:17px">${d}</span>`, null, 'border:1px solid #000');
+    h += box(202, y, 1094, 67, 'b', `<span style="font-size:21px">${t}</span>`, null, 'border:1px solid #000');
+  });
+  return stage(1310, 101 + OC_EVENTOS.length * 67 + 10, h);
+}
+
+/* =========================================================================
+   TELA PADRÃO "EM CONSTRUÇÃO" (conteúdo a migrar do Excel)
+   ========================================================================= */
+function renderPlaceholder(sc) {
+  let info = '';
+  if (sc.occ) {
+    const o = sc.occ;
+    info = `<div class="card"><h2>Classificação na Matriz de Risco</h2>
+      <dl class="kv">
+        <dt>Classe</dt><dd><span class="chip ${o.nivel}">${o.cls} ${NIVEL[o.nivel]}</span></dd>
+        <dt>Severidade / gravidade</dt><dd>${o.sev}</dd>
+        <dt>Frequência / probabilidade</dt><dd>${o.freq}</dd>
+        ${o.hazid ? '<dt>Indicador</dt><dd><span class="hazid">HAZID</span></dd>' : ''}
+      </dl></div>`;
+  }
+  return `<div class="page">
+    <div class="p-top">
+      <div class="p-side"><a href="#/inicio">SIMEO - figura</a><a href="#/matriz-risco">Matriz de Risco</a><a href="#/mapa">Mapa de telas</a></div>
+      <div class="p-title"><h1>${esc(sc.title.toUpperCase())}</h1>${sc.sub ? `<small>${esc(sc.sub)}</small>` : ''}<small>${esc(sc.group)}</small></div>
+    </div>
+    <div class="p-body">
+      ${info}
+      <div class="card" style="border-left-color:#7F7F7F">
+        <h2 style="color:#555">Tela em construção</h2>
+        <p>Conteúdo a ser migrado da versão em Excel do SIMEO. A estrutura de navegação desta tela já está pronta: basta inserir o conteúdo.</p>
+      </div>
+    </div></div>`;
+}
+
+/* =========================================================================
+   MAPA DE TELAS (acompanhamento da migração)
+   ========================================================================= */
+function renderMapa() {
+  const list = Object.values(SCREENS).filter(s => !s.hidden);
+  const ok = list.filter(s => s.ready).length;
+  const groups = {};
+  list.forEach(s => (groups[s.group] = groups[s.group] || []).push(s));
+  return `<div class="page">
+    <div class="p-top">
+      <div class="p-side"><a href="#/inicio">SIMEO - figura</a><a href="#/matriz-risco">Matriz de Risco</a></div>
+      <div class="p-title"><h1>MAPA DE TELAS</h1><small>SIMEO — Cidade do Rio de Janeiro · ${VERSAO}</small></div>
+    </div>
+    <div class="p-body">
+      <div class="card"><h2>Andamento da migração</h2>
+        <div class="progress"><div style="width:${(ok / list.length * 100).toFixed(1)}%"></div></div>
+        <p>${ok} de ${list.length} telas com conteúdo (${(ok / list.length * 100).toFixed(0)}%).</p></div>
+      ${Object.entries(groups).map(([g, arr]) => `<div class="map-group"><h3>${esc(g)} (${arr.length})</h3>
+        ${arr.map(s => `<a href="#/${s.id}"><span>${esc(s.title)}${s.occ ? ` <span class="chip ${s.occ.nivel}">${s.occ.cls}</span>` : ''}</span>
+          <span class="chip ${s.ready ? 'ok' : 'todo'}">${s.ready ? 'pronta' : 'a migrar'}</span></a>`).join('')}</div>`).join('')}
+    </div></div>`;
+}
+
+/* =========================================================================
+   Motor: palco escalável + roteador
+   ========================================================================= */
+function stage(W, H, inner, fitW) {
+  return `<div class="viewport"${fitW ? ' style="align-items:flex-start"' : ''}><div class="scaler" data-w="${W}" data-h="${H}"${fitW ? ' data-fw="1"' : ''}><div class="stage" style="width:${W}px;height:${H}px">${inner}</div></div></div>`;
+}
+function fit() {
+  const sc = document.querySelector('.scaler');
+  document.getElementById('rotate').classList.toggle('on', !!sc);
+  if (!sc) return;
+  const W = +sc.dataset.w, H = +sc.dataset.h;
+  const k = (sc.dataset.fw ? Math.min(innerWidth / W, 1.15) : Math.min(innerWidth / W, (innerHeight - 50) / H)) * 0.99;
+  sc.style.width = W * k + 'px'; sc.style.height = H * k + 'px';
+  sc.firstElementChild.style.transform = `scale(${k})`;
+}
+let CUR = 'inicio';
+function refresh() { const sc = SCREENS[CUR]; document.getElementById('app').innerHTML = sc.render ? sc.render(sc) : renderPlaceholder(sc); fit(); }
+function route() {
+  const id = (location.hash.replace(/^#\/?/, '') || 'inicio');
+  const sc = SCREENS[id] || SCREENS.inicio; CUR = sc.id;
+  document.getElementById('app').innerHTML = sc.render ? sc.render(sc) : renderPlaceholder(sc);
+  document.title = `SIMEO — ${sc.title}`;
+  document.getElementById('nav').innerHTML = sc.id === 'inicio'
+    ? `<a href="#/mapa">☰ Mapa de telas</a>`
+    : `<a href="javascript:history.back()">← Voltar</a><a href="#/inicio">⌂ Tela inicial</a><a href="#/mapa">☰ Mapa</a>`;
+  scrollTo(0, 0); fit();
+}
+addEventListener('hashchange', route);
+addEventListener('resize', fit);
+route();
+</script>
+</body>
+</html>
